@@ -1,6 +1,7 @@
 package tree;
 import data.Data;
 import java.util.List;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import data.Attribute;
@@ -14,7 +15,7 @@ abstract class SplitNode extends Node implements Comparable<SplitNode>{
     /**
      * Inner Class che aggrega tutte le informazioni riguardanti un nodo di split.
      */
-	class SplitInfo{
+	class SplitInfo implements Serializable{
         /** Valore dell'attributo indipendente che definisce lo split*/
 		private Object splitValue;
         /** Identificativo numerico del ramo originante dallo split*/
