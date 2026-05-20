@@ -177,12 +177,7 @@ abstract class SplitNode extends Node implements Comparable<SplitNode>{
      * @return stringa rappresentativa del nodo di split.
      */
 	public String toString() {
-        String s = "SPLIT : attribute=" + attribute.getName() + " " + super.toString() + " Split Variance: " + splitVariance + "\n";
-        
-        for (int i = 0; i < getNumberOfChildren(); i++) {
-            s += "child " + i + " split value=" + mapSplit.get(i).getSplitValue() + mapSplit.get(i).toString() + "\n";
-        }
-        return s;
+        return "SPLIT : attribute=" + attribute.getName() + " " + super.toString() + " Split Variance: " + splitVariance + "\n";
     }
 
     /**

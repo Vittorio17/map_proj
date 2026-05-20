@@ -73,6 +73,10 @@ class DiscreteNode extends SplitNode {
      */
     @Override
     public String toString() {
-        return "DISCRETE " + super.toString();
+        String s = "DISCRETE " + super.toString() + "\n";
+        for (int i = 0; i < getNumberOfChildren(); i++) {
+            s += "child " + i + " split value=" + mapSplit.get(i).getSplitValue() + mapSplit.get(i).toString() + "\n";
+        }
+        return s;
     }
 }

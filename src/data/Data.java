@@ -31,66 +31,71 @@ public class Data {
 	*/
     public Data(String fileName) throws TrainingDataException {
 		File inFile = new File(fileName);
-		
-		// 1. Controllo: File inesistente
 		if (!inFile.exists()) {
 			throw new TrainingDataException("Errore: Il file " + fileName + " non esiste.");
 		}
-	
+
 		Scanner sc = null;
 		try {
 			sc = new Scanner(inFile);
-			if (sc.hasNextLine()) {
-				String line = sc.nextLine();
+			if (!sc.hasNextLine()) {
+				throw new TrainingDataException("Errore: Il file è vuoto.");
+			}
+
+			// 1. Lettura dello schema
+			String line = sc.nextLine();
+			if (!line.contains("@schema")) {
+				throw new TrainingDataException("Errore: Schema mancante.");
+			}
+
+			short iAttribute = 0;
+			line = sc.nextLine();
+			
+			// 2. Parsing attributi (@desc o @target)
+			while (!line.contains("@data")) {
 				String[] s = line.split(" ");
-	
-				// 2. Controllo: Schema mancante o errato
-				if (!line.contains("@schema")) {
-					throw new TrainingDataException("Errore: Lo schema del training set è mancante o errato.");
-				}
-	
-				short iAttribute = 0;
-				line = sc.nextLine();
-	
-				while (!line.contains("@data")) {
-					s = line.split(" ");
-					if (s[0].equals("@desc")) {
+				if (s[0].equals("@desc")) {
+					if (s.length > 2) { // Discreto
 						String[] discreteValues = s[2].split(",");
 						explanatorySet.add(new DiscreteAttribute(s[1], iAttribute, discreteValues));
-						iAttribute++;
-					} else if (s[0].equals("@target")) {
-						classAttribute = new ContinuousAttribute(s[1], iAttribute);
+					} else { // Continuo (nessun valore discreto specificato)
+						explanatorySet.add(new ContinuousAttribute(s[1], iAttribute));
 					}
-					line = sc.nextLine();
+					iAttribute++;
+				} else if (s[0].equals("@target")) {
+					classAttribute = new ContinuousAttribute(s[1], iAttribute);
 				}
-	
-				// 3. Controllo: Variabile target numerica 
-				if (classAttribute == null || !(classAttribute instanceof ContinuousAttribute)) {
-					throw new TrainingDataException("Errore: Variabile target non trovata o non numerica.");
-				}
-	
-				// 4. Controllo: Training set vuoto
-				s = line.split(" ");
-				numberOfExamples = Integer.parseInt(s[1]);
-				if (numberOfExamples == 0) {
-					throw new TrainingDataException("Errore: Il training set non contiene esempi.");
-				}
-	
-				//Popolamento dati
-				data = new Object[numberOfExamples][explanatorySet.size() + 1];
-				short iRow = 0;
-				while (sc.hasNextLine() && iRow < numberOfExamples) {
-					line = sc.nextLine();
-					s = line.split(",");
-					for (short jColumn = 0; jColumn < s.length - 1; jColumn++) {
+				line = sc.nextLine();
+			}
+
+			// 3. Controllo target
+			if (classAttribute == null) {
+				throw new TrainingDataException("Errore: Variabile target non trovata.");
+			}
+
+			// 4. Numero esempi
+			String[] s = line.split(" ");
+			numberOfExamples = Integer.parseInt(s[1]);
+			if (numberOfExamples == 0) {
+				throw new TrainingDataException("Errore: Il training set non contiene esempi.");
+			}
+
+			// 5. Popolamento dati 
+			data = new Object[numberOfExamples][explanatorySet.size() + 1];
+			short iRow = 0;
+			while (sc.hasNextLine() && iRow < numberOfExamples) {
+				line = sc.nextLine();
+				s = line.split(",");
+				for (short jColumn = 0; jColumn < explanatorySet.size(); jColumn++) {
+					Attribute attr = explanatorySet.get(jColumn);
+					if (attr instanceof DiscreteAttribute) {
 						data[iRow][jColumn] = s[jColumn];
+					} else {
+						data[iRow][jColumn] = Double.valueOf(s[jColumn]);
 					}
-					data[iRow][s.length - 1] = Double.valueOf(s[s.length - 1]);
-					iRow++;
 				}
-	
-			} else {
-				throw new TrainingDataException("Errore: Il file è vuoto.");
+				data[iRow][explanatorySet.size()] = Double.valueOf(s[s.length - 1]);
+				iRow++;
 			}
 		} catch (FileNotFoundException e) {
 			throw new TrainingDataException(e.toString());
@@ -98,6 +103,8 @@ public class Data {
 			if (sc != null) sc.close();
 		}
 	}
+	
+			
 
 	/**
 	 * Restituisce il numero di esempi del training set.
@@ -176,8 +183,7 @@ public class Data {
 	 * @param endExampleIndex 	Indice finale dell'intervallo di esempi.
 	 */
 	public void sort(Attribute attribute, int beginExampleIndex, int endExampleIndex){
-	
-			quicksort(attribute, beginExampleIndex, endExampleIndex);
+		quicksort(attribute, beginExampleIndex, endExampleIndex);
 	}
 	
 	/**
@@ -191,16 +197,13 @@ public class Data {
 			temp=data[i][k];
 			data[i][k]=data[j][k];
 			data[j][k]=temp;
-		}
-		
+		}	
 	}
-	
-
 	
 	
 	/**
-	 * Partiziona il training set rispetto a un attributo.
-	 * @param attribute Attributo per il partizionamento.
+	 * Partiziona il training set rispetto a un attributo discreto.
+	 * @param attribute Attributo discreto per il partizionamento.
 	 * @param inf Indice inferiore.
 	 * @param sup Indice superiore.
 	 * @return Indice del pivot.
@@ -236,6 +239,46 @@ public class Data {
 		return j;
 
 	}
+
+	/**
+	 * Partiziona il training set rispetto a un attributo continuo.
+	 * @param attribute Attributo continuo per il partizionamento.
+	 * @param inf Indice inferiore.
+	 * @param sup Indice superiore.
+	 * @return Indice del pivot.
+	 */
+	private  int partition(ContinuousAttribute attribute, int inf, int sup){
+		int i,j;
+	
+		i=inf; 
+		j=sup; 
+		int	med=(inf+sup)/2;
+		Double x=(Double)getExplanatoryValue(med, attribute.getIndex());
+		swap(inf,med);
+	
+		while (true) 
+		{
+			
+			while(i<=sup && ((Double)getExplanatoryValue(i, attribute.getIndex())).compareTo(x)<=0){ 
+				i++; 
+				
+			}
+		
+			while(((Double)getExplanatoryValue(j, attribute.getIndex())).compareTo(x)>0) {
+				j--;
+			
+			}
+			
+			if(i<j) { 
+				swap(i,j);
+			}
+			else break;
+		}
+		swap(inf,j);
+		return j;
+
+	}
+
 	
 	/**
 	 * Ordina il dataset utilizzando l'algoritmo Quicksort.
@@ -244,12 +287,13 @@ public class Data {
 	 * @param sup Indice superiore.
 	 */
 	private void quicksort(Attribute attribute, int inf, int sup){
-		
 		if(sup>=inf){
 			
 			int pos;
-			
-			pos=partition((DiscreteAttribute)attribute, inf, sup);
+			if(attribute instanceof DiscreteAttribute)
+				pos=partition((DiscreteAttribute)attribute, inf, sup);
+			else
+				pos=partition((ContinuousAttribute)attribute, inf, sup);
 					
 			if ((pos-inf) < (sup-pos+1)) {
 				quicksort(attribute, inf, pos-1); 
@@ -259,11 +303,8 @@ public class Data {
 			{
 				quicksort(attribute, pos+1, sup); 
 				quicksort(attribute, inf, pos-1);
-			}
-			
-			
+			}	
 		}
-		
 	}
 
 }

@@ -9,7 +9,7 @@ import java.util.*;
 public class DiscreteAttribute extends Attribute implements Iterable<String>{
 
     /** Set di valori distinti dell'attributo ordinati tramite un albero (TreeSet). */
-    private Set<String> values = new TreeSet<>();
+    private Set<String> values;
 
     /**
      * Costruttore di classe. Invoca il costruttore della super-classe e avvalora
@@ -20,7 +20,10 @@ public class DiscreteAttribute extends Attribute implements Iterable<String>{
      */
     public DiscreteAttribute(String name,int index,String[] values){
         super(name,index);
-        this.values = values;
+        this.values = new TreeSet<String>();
+        for(String v : values){
+            this.values.add(v);
+        }
     }
 
     /**

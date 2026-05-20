@@ -1,14 +1,23 @@
 package tree;
 import data.Attribute;
 import data.Data;
+import data.ContinuousAttribute;
 import data.DiscreteAttribute;
 import utility.Keyboard;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.TreeSet;
 /**
  * La classe RegressionTree modella l'entità dell'intero albero di decisione come
  * insieme di sotto-alberi.
  */
-public class RegressionTree {
+public class RegressionTree implements Serializable{
 
     /** Radice dell'albero o del sotto-albero corrente. */
     private Node root;
@@ -86,6 +95,9 @@ public class RegressionTree {
             
             if(attribute instanceof DiscreteAttribute){
                 DiscreteNode currentNode = new DiscreteNode(trainingSet, begin,end, (DiscreteAttribute) attribute);
+                sortedSplits.add(currentNode);
+            }else if(attribute instanceof ContinuousAttribute){
+                ContinuousNode currentNode = new ContinuousNode(trainingSet, begin,end,(ContinuousAttribute)attribute);
                 sortedSplits.add(currentNode);
             }
         }
@@ -189,5 +201,18 @@ public class RegressionTree {
             LeafNode leaf = (LeafNode) root;
             System.out.println(current + " ==> Class=" + leaf.getPredictedClassValue());
         }
+    }
+
+    public void salva(String fileName) throws IOException{
+        ObjectOutputStream out=new ObjectOutputStream(new FileOutputStream(fileName));
+        out.writeObject(this);
+        out.close();
+    }
+
+    public static RegressionTree carica(String fileName) throws IOException, ClassNotFoundException{
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
+        RegressionTree tree = (RegressionTree) in.readObject();
+        in.close();
+        return tree;
     }
 }
