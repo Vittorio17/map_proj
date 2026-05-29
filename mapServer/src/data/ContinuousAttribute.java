@@ -12,7 +12,7 @@ public class ContinuousAttribute extends Attribute{
      * @param name Nome simboli dell'attributo.
      * @param index Identificativo numerico dell'attributo.
     */
-    public ContinuousAttribute(String name,int index){
+    ContinuousAttribute(String name,int index){
         super(name,index);
     }
 }
