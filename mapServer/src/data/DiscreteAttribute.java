@@ -34,7 +34,20 @@ public class DiscreteAttribute extends Attribute implements Iterable<String>{
         return values.size();
     }
 
-    
+    public String getValue(int i){
+        if (i < 0 || i >= values.size()) {
+            throw new IndexOutOfBoundsException("Indice non valido: " + i);
+        }
+        
+        int current = 0;
+        for (String value : values) {
+            if (current == i) {
+                return value;
+            }
+            current++;
+        }
+        return null;
+    }
 
     /**
      * Implementazione del metodo dell'interfaccia Iterable.
