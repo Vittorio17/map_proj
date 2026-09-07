@@ -156,4 +156,109 @@ public class KeyboardTest {
         assertEquals("Il contatore errori non deve essere incrementato con input valido",
                      erroriPrima, Keyboard.getErrorCount());
     }
+
+    /**
+     * Test 6: resetErrorCount ignora il parametro passato
+     * Verifica che resetErrorCount(int count) ignori completamente il parametro
+     * e reimposti sempre il contatore a 0, indipendentemente dal valore passato.
+     * Questo test evidenzia un'anomalia nel design del metodo.
+     */
+    @Test
+    public void testResetErrorCountIgnoraParametro() {
+        // Arrange - genera alcuni errori per avere un contatore > 0
+        String input = "errore\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        Keyboard.readInt(); // genera un errore
+        int erroriDopoErrore = Keyboard.getErrorCount();
+        assertTrue("Dovrebbero esserci errori registrati", erroriDopoErrore > 0);
+
+        // Act - reset con parametro 10 (che dovrebbe essere ignorato)
+        Keyboard.resetErrorCount(10);
+        int countDopoResetCon10 = Keyboard.getErrorCount();
+
+        // Genera nuovamente errori
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        Keyboard.readInt();
+        Keyboard.readInt();
+        int erroriDopoDueErrori = Keyboard.getErrorCount();
+
+        // Act - reset con parametro -1 (che dovrebbe essere ignorato)
+        Keyboard.resetErrorCount(-1);
+        int countDopoResetConMenoUno = Keyboard.getErrorCount();
+
+        // Assert
+        assertEquals("resetErrorCount(10) deve reimpostare il contatore a 0, ignorando il parametro",
+                     0, countDopoResetCon10);
+        assertEquals("resetErrorCount(-1) deve reimpostare il contatore a 0, ignorando il parametro",
+                     0, countDopoResetConMenoUno);
+    }
+
+    /**
+     * Test 7: readWord restituisce singolo token delimitato da spazi
+     * Verifica che readWord() estragga solo il primo token utilizzando
+     * StringTokenizer con delimitatori standard.
+     */
+    @Test
+    public void testReadWordSingoloToken() {
+        // Arrange
+        String input = "Hello World\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        Keyboard.resetErrorCount(0);
+
+        // Act
+        String parola = Keyboard.readWord();
+
+        // Assert
+        assertEquals("readWord deve restituire solo il primo token", "Hello", parola);
+        assertEquals("Il contatore errori non deve essere incrementato", 0, Keyboard.getErrorCount());
+    }
+
+    /**
+     * Test 8: readString concatena tutti i token fino a fine riga
+     * Verifica che readString() recuperi il primo token e poi iteri
+     * concatenando tutti i token successivi fino a endOfLine().
+     */
+    @Test
+    public void testReadStringConcatenaToken() {
+        // Arrange
+        String input = "Hello World Test\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        Keyboard.resetErrorCount(0);
+
+        // Act
+        String riga = Keyboard.readString();
+
+        // Assert
+        assertEquals("readString deve concatenare tutti i token della riga",
+                     "HelloWorldTest", riga);
+        assertEquals("Il contatore errori non deve essere incrementato", 0, Keyboard.getErrorCount());
+    }
+
+    /**
+     * Test 9: readChar estrae primo carattere e bufferizza il resto
+     * Verifica che readChar() estragga il primo carattere e memorizzi
+     * la sottostringa rimanente in current_token per letture successive.
+     */
+    @Test
+    public void testReadCharConBuffer() {
+        // Arrange
+        String input = "ab\ncd\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        Keyboard.resetErrorCount(0);
+
+        // Act - prima lettura
+        char char1 = Keyboard.readChar();
+
+        // Act - seconda lettura (dovrebbe leggere 'b' dal buffer)
+        char char2 = Keyboard.readChar();
+
+        // Act - terza lettura (nuova riga)
+        char char3 = Keyboard.readChar();
+
+        // Assert
+        assertEquals("Primo carattere deve essere 'a'", 'a', char1);
+        assertEquals("Secondo carattere deve essere 'b' (dal buffer)", 'b', char2);
+        assertEquals("Terzo carattere deve essere 'c' (nuova riga)", 'c', char3);
+        assertEquals("Il contatore errori non deve essere incrementato", 0, Keyboard.getErrorCount());
+    }
 }
