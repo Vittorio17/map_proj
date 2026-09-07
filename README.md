@@ -1,5 +1,6 @@
 ## Client UML
-![testo alternativo](mapClient/Client.png)
+![testo alternativo](mapClient/UML.png)
 
 ## Server UML
-![testo alternativo](MapServer/Server.png)
+![testo alternativo](MapServer/UML.png)
+
