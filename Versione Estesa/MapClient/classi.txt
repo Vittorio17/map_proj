@@ -1,0 +1,226 @@
+
+Package Model
+
+Classe NodeDTO: rappresenta un singolo nodo dell'albero.
+	
+	Attributi
+	- leaf: boolean
+	- splitCondition: String
+	- predictedValue: Double
+	- selected: boolean
+	- Children: List<NodeDTO>
+	
+	Metodi
+	+ NodeDTO(splitCondition: String)
+	+ NodeDTO(predictedValue: Double)
+	+ setLeaf(leaf: boolean)
+	+ isLeaf(): boolean
+	+ setSplitCondition(splitCondition: String)
+	+ getSplitCondition(): String 
+	+ setPredictedValue(predictedValue: Double)
+	+ getPredictedValue(): Double
+	+ getChildren(): List<NodeDTO>
+	+ addChild(child: NodeDTO)
+	+ toString(): String
+	+ isSelected(): boolean
+	+ setSelected(selected: boolean)
+
+Classe TreeDTO
+	
+	Attributi
+	- root: NodeDTO
+	- tableName: String
+	
+	Metodi
+	+ TreeDTO(root: NodeDTO,tableName: String)
+	+ setRoot(root: NodeDTO)
+	+ getRoot(): NodeDTO
+	+ setTableName(tableName: String)
+	+ getTableName(): String
+
+Package View
+
+Classe TreePanel
+
+	Attributi
+	- currentTree: TreeDTO
+	- currentTree: TreeDTO
+	- NODE_WIDTH: int = 180 statico {readonly}
+	- NODE_HEIGHT: int = 54 statico {readonly}
+	- VERTICAL_GAP: int = 75 statico {readonly}
+	
+	Metodi:
+	+ TreePanel()
+	+ resetTree()
+	+ updateTree(treeDTO: TreeDTO)
+	# paintComponent(g: Graphics)
+	- drawTree(g2d: Graphics2D, node: NodeDTO, x: int, y: int, availableWidth: int)
+	- drawNodeBox(g2d: Graphics2D, node: NodeDTO, x: int, y: int)
+	- centerText(g2d: Graphics2D,text: String,x: int,y: int, width: int, height: int)
+Estende JPanel
+
+Classe ControlPanel
+
+	Attributi
+	- ipField: JTextField
+	- portField: JTextField
+	- tableComboBox : JComboBox<String>
+	- refreshTablesButton : JButton
+	- loadTreeButton: JButton	
+	- sourceComboBox: JComboBox<String>
+	- predictButton: JButton
+	Metodi:
+	+ ControlPanel()
+	+ getServerAddress(): String
+	+ getServerPort(): int
+	+ getTableName(): String
+	+ getLoadTreeButton(): JButton
+	+ isDatabaseSource(): boolean
+	+ getPredictButton(): JButton
+	+ setPredictionEnabled(enabled: boolean)	
+	+ getRefreshTablesButton() : JButton
+	+ updateTableList(tables : List<String>)
+
+Estende JPanel
+
+Classe LogPanel
+
+	Attributi
+	- logArea: JTextArea
+	- scrollPane: JScrollPane
+	Metodi
+	+ logPanel()
+	+ log(message: String)
+	+ clear
+
+Estende JPanel
+
+Classe SummaryPanel
+	
+	Attributi:
+	- tableValueLabel: JLabel
+    	- stepsValueLabel: JLabel
+    	- statusBadgeLabel: JLabel
+    	- predictionValueLabel: JLabel
+	- historyListModel: DefaultListModel<String>
+	- historyList: JList<String>
+	Metodi:
+	+ SummaryPanel()
+    	- initSessionPanel(): JPanel
+    	- initResultCard(): JPanel
+	- initHistoryPanel(): JPanel
+    	+ setStatus(status: String, connected: boolean)
+    	+ setTable(tableName: String)
+    	+ setSteps(steps: int)
+    	+ setPrediction(value: Double)
+	+ addHistoryEntry(table: String, path: List<String>, pred: Double)
+    	+ reset()
+
+Estende JPanel
+
+Classe Mainframe
+
+	Attributi
+	- controlPanel: ControlPanel
+	- treePanel: TreePanel
+	- summaryPanel: SummaryPanel
+	- logPanel: LogPanel
+	Metodi:
+	+ Mainframe()
+	+ getControlPanel(): ControlPanel
+	+ getTreePanel(): TreePanel
+	+ getSummaryPanel(): SummaryPanel
+	+ getLogPanel(): LogPanel
+
+Estende JFrame
+
+
+Package Controller
+
+Classe MainController
+
+	Attributi
+	- view: Mainframe
+	- connection: ServerConnection
+	Metodi
+	+ MainController(view: Mainframe)
+	- initListeners()
+	- handleInitTree()
+	- handlePredict()
+	- handleRefreshTables()
+
+Package Network
+
+Classe ServerConnection
+	
+	Attributi
+	- socket: Socket
+	- out: ObjectOutputStream
+	- in: ObjectInputStream
+	Metodi
+	+ connect(ip: String,port: int)
+	+ isConnected(): boolean
+	+ send(obj: Object)
+	+ receive(): Object
+	+ close()
+
+Classe InitTreeWorker
+
+	Attributi
+	- connection: ServerConnection
+	- ip: String
+	- port: int
+	- tableName: String
+	- fromDB: boolean
+	- view: MainFrame
+	Metodi:
+	# doInBackground(): String
+	# done()
+Estende SwingWorker<String,void>
+
+Classe PredictionWorker
+
+	Attributi
+	- connection: ServerConnection
+	- view: Mainframe
+	- rootNode: NodeDTO
+    	- currentNode: NodeDTO
+	Metodi
+	+ PredictionWorker(connection: ServerConnection, view: MainFrame)
+	# doInBackground(): Double
+	- handleOkResponse(): Double
+	- handleQueryResponse(step: int): void
+	- parseBranchOptions(queryText: String): List<String>
+	- promptUserForChoice(queryText: String): int
+	# process(chunks: List<NodeDTO>)
+	# done()
+
+Estende SwingWorker<Double, NodeDTO>
+
+Inner class UserQueryDialog di PredictionWorker
+	
+	Attributi
+	- queryText: String
+	- choice: int = -1
+	Metodi
+	+ UserQueryDialog(queryText: String)
+	+ run()
+	+ getChoice(): int
+
+Implementa Runnable
+
+Classe TableLoaderWorker
+	
+	Attributi
+	- connection: ServerConnection
+	- ip: String
+	- port: int
+	- view: MainFrame
+	Metodi
+	+ TableLoaderWorker(connection: ServerConnection,ip:String,port:int,view:MainFrame)
+	# doInBackground() : List<String>
+	# done()
+
+Estende SwingWorker<String,Void>
+
+
