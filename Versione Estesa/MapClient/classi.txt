@@ -45,9 +45,9 @@ Classe TreePanel
 	Attributi
 	- currentTree: TreeDTO
 	- currentTree: TreeDTO
-	- NODE_WIDTH: int = 140 statico {readonly}
-	- NODE_HEIGHT: int = 45 statico {readonly}
-	- VERTICAL_GAP: int = 70 statico {readonly}
+	- NODE_WIDTH: int = 180 statico {readonly}
+	- NODE_HEIGHT: int = 54 statico {readonly}
+	- VERTICAL_GAP: int = 75 statico {readonly}
 	
 	Metodi:
 	+ TreePanel()
@@ -64,7 +64,8 @@ Classe ControlPanel
 	Attributi
 	- ipField: JTextField
 	- portField: JTextField
-	- tableField: JTextField
+	- tableComboBox : JComboBox<String>
+	- refreshTablesButton : JButton
 	- loadTreeButton: JButton	
 	- sourceComboBox: JComboBox<String>
 	- predictButton: JButton
@@ -77,6 +78,8 @@ Classe ControlPanel
 	+ isDatabaseSource(): boolean
 	+ getPredictButton(): JButton
 	+ setPredictionEnabled(enabled: boolean)	
+	+ getRefreshTablesButton() : JButton
+	+ updateTableList(tables : List<String>)
 
 Estende JPanel
 
@@ -96,16 +99,22 @@ Classe SummaryPanel
 	
 	Attributi:
 	- tableValueLabel: JLabel
-	- stepsValueLabel: JLabel
-	- predictionValueLabel: JLabel
+    	- stepsValueLabel: JLabel
+    	- statusBadgeLabel: JLabel
+    	- predictionValueLabel: JLabel
+	- historyListModel: DefaultListModel<String>
+	- historyList: JList<String>
 	Metodi:
 	+ SummaryPanel()
-	- initMetaPanel(): JPanel
-	- initResultCard(): JPanel
-	+ setTable(tableName: String)
-	+ setSteps(steps: int)
-	+ setPrediction(value: Double)
-	+ reset()
+    	- initSessionPanel(): JPanel
+    	- initResultCard(): JPanel
+	- initHistoryPanel(): JPanel
+    	+ setStatus(status: String, connected: boolean)
+    	+ setTable(tableName: String)
+    	+ setSteps(steps: int)
+    	+ setPrediction(value: Double)
+	+ addHistoryEntry(table: String, path: List<String>, pred: Double)
+    	+ reset()
 
 Estende JPanel
 
@@ -138,7 +147,7 @@ Classe MainController
 	- initListeners()
 	- handleInitTree()
 	- handlePredict()
-
+	- handleRefreshTables()
 
 Package Network
 
@@ -183,8 +192,8 @@ Classe PredictionWorker
 	- handleQueryResponse(step: int): void
 	- parseBranchOptions(queryText: String): List<String>
 	- promptUserForChoice(queryText: String): int
-	# process(chunks: List<NodeDTO>): void
-	# done(): void
+	# process(chunks: List<NodeDTO>)
+	# done()
 
 Estende SwingWorker<Double, NodeDTO>
 
@@ -200,6 +209,18 @@ Inner class UserQueryDialog di PredictionWorker
 
 Implementa Runnable
 
+Classe TableLoaderWorker
+	
+	Attributi
+	- connection: ServerConnection
+	- ip: String
+	- port: int
+	- view: MainFrame
+	Metodi
+	+ TableLoaderWorker(connection: ServerConnection,ip:String,port:int,view:MainFrame)
+	# doInBackground() : List<String>
+	# done()
 
+Estende SwingWorker<String,Void>
 
 

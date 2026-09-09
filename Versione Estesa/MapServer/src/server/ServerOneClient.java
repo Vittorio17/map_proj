@@ -8,10 +8,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 import data.Data;
 import data.TrainingDataException;
 import tree.RegressionTree;
+import database.DbAccess;
 
 /**
  * Gestisce la sessione di comunicazione con un singolo client.
@@ -50,6 +52,7 @@ public class ServerOneClient extends Thread{
      * - 1 (Costruzione albero): Induce l'albero di regressione e lo salva in un file .dmp.
      * - 2 (Caricamento albero): Ripristina in memoria un albero di regressione salvato in precedenza.
      * - 3 (Predizione): Naviga l'albero richiedendo input all'utente fino al raggiungimento di un nodo foglia.
+     * - 4 (Esplorazione DB): Restituisce una lista delle tabelle disponibili nel database
      * 
      * Gestisce inoltre le eccezioni operative e garantisce la chiusura sicura delle risorse 
      * di rete al termine della connessione.
@@ -110,6 +113,24 @@ public class ServerOneClient extends Thread{
                         }
                         break;
                     
+                        
+                    case 4:
+                        try {
+                            DbAccess db = new DbAccess();
+                            db.initConnection();
+                            List<String> tableNames = db.getAvailableTables();
+                            db.closeConnection();
+
+                            out.writeObject("OK");
+                            out.writeObject(tableNames);
+                            out.flush();
+                        } catch (Exception e) {
+                            out.writeObject("ERROR");
+                            out.writeObject("Errore recupero tabelle dal DB: " + e.getMessage());
+                            out.flush();
+                        }
+                        break;
+                        
                     default:
                         break;
                 }

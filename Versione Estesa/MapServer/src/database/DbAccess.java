@@ -1,8 +1,12 @@
 package database;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Gestisce la connessione al database MySQL per l'applicazione.
@@ -82,5 +86,29 @@ public class DbAccess {
                 System.out.println("[!] VendorError: " + e.getErrorCode());
             }
         }
+    }
+    
+    /**
+     * Restituisce l'elenco delle tabelle disponibili nel database.
+     *
+     * Se la connessione al database non è attiva, viene inizializzata
+     * prima di recuperare le informazioni sulle tabelle.
+     *
+     * @return lista dei nomi delle tabelle disponibili
+     * @throws SQLException se si verifica un errore durante l'accesso al database
+     */
+    public List<String> getAvailableTables() throws SQLException, DatabaseConnectionException {
+        List<String> tables = new ArrayList<>();
+        if (conn == null || conn.isClosed()) {
+            initConnection(); // Solleva DatabaseConnectionException
+        }
+        
+        try (java.sql.Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")) {
+            while (rs.next()) {
+                tables.add(rs.getString(1));
+            }
+        }
+        return tables;
     }
 }
