@@ -16,7 +16,8 @@ public class PredictionWorker extends SwingWorker<Double, NodeDTO> {
     private MainFrame view;
     private NodeDTO rootNode;
     private NodeDTO currentNode;
-
+    private List<String> visitedConditions = new ArrayList<>();
+    
     public PredictionWorker(ServerConnection connection, MainFrame view) {
         this.connection = connection;
         this.view = view;
@@ -49,7 +50,6 @@ public class PredictionWorker extends SwingWorker<Double, NodeDTO> {
     private Double handleOkResponse() throws Exception {
         Double predictedValue = (Double) connection.receive();
 
-        // Creazione e aggancio atomico della foglia al ramo attivo
         SwingUtilities.invokeAndWait(() -> {
             NodeDTO leafNode = new NodeDTO(predictedValue);
             if (currentNode != null) {
@@ -62,12 +62,15 @@ public class PredictionWorker extends SwingWorker<Double, NodeDTO> {
             view.getTreePanel().updateTree(new TreeDTO(rootNode, currentTable));
 
             view.getSummaryPanel().setPrediction(predictedValue);
+
+            view.getSummaryPanel().addHistoryEntry(currentTable, visitedConditions, predictedValue);
+
             view.getLogPanel().log("Predizione completata. Valore stimato: " + predictedValue);
         });
 
         return predictedValue;
     }
-
+    
     private void handleQueryResponse(int step) throws Exception {
         String queryText = (String) connection.receive();
 
@@ -84,6 +87,10 @@ public class PredictionWorker extends SwingWorker<Double, NodeDTO> {
         connection.send(choice);
 
         List<String> options = parseBranchOptions(queryText);
+
+        if (choice >= 0 && choice < options.size()) {
+            visitedConditions.add(options.get(choice));
+        }
 
         SwingUtilities.invokeAndWait(() -> {
             if (rootNode == null) {

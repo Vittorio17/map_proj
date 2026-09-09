@@ -16,9 +16,9 @@ public class TreePanel extends JPanel {
 
 	private TreeDTO currentTree;
 
-    private static final int NODE_WIDTH = 150;
-    private static final int NODE_HEIGHT = 44;
-    private static final int VERTICAL_GAP = 70;
+    private static final int NODE_WIDTH = 180;
+    private static final int NODE_HEIGHT = 54;
+    private static final int VERTICAL_GAP = 75;
     
     public TreePanel() {
         setBackground(Color.WHITE);

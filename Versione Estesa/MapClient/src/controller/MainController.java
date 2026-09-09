@@ -2,49 +2,61 @@ package controller;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import javax.swing.JOptionPane;
-
-import model.NodeDTO;
-import model.TreeDTO;
 import network.InitTreeWorker;
 import network.PredictionWorker;
 import network.ServerConnection;
+import network.TableLoaderWorker;
 import view.MainFrame;
 
 public class MainController {
-	private MainFrame view;
-	private ServerConnection connection;
-	
-	public MainController(MainFrame view) {
-		this.view = view;
-		this.connection = new ServerConnection();
-		initListeners();
-	}
-	
-	public void initListeners() {
-		// Evento 1: Inizializzazione albero
-        view.getControlPanel().getLoadTreeButton().addActionListener(e -> handleInitTree());
+    private MainFrame view;
+    private ServerConnection connection;
 
-        // Evento 2: Avvio sessione interattiva di predizione
+    public MainController(MainFrame view) {
+        this.view = view;
+        this.connection = new ServerConnection();
+        initListeners();
+    }
+
+    public void initListeners() {
+        view.getControlPanel().getLoadTreeButton().addActionListener(e -> handleInitTree());
         view.getControlPanel().getPredictButton().addActionListener(e -> handlePredict());
-	
-        // Chiusura sicura del socket alla chiusura della finestra
+        view.getControlPanel().getRefreshTablesButton().addActionListener(e -> handleRefreshTables());
+
         view.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 connection.close();
             }
         });
-	}
-	
-	private void handleInitTree() {
+    }
+
+    private void handleRefreshTables() {
+        String ip = view.getControlPanel().getServerAddress();
+        int port;
+
+        try {
+            port = view.getControlPanel().getServerPort();
+            if (port <= 0 || port > 65535) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Porta non valida.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        view.getControlPanel().getRefreshTablesButton().setEnabled(false);
+        view.getLogPanel().log("Richiesta elenco tabelle al server...");
+
+        TableLoaderWorker worker = new TableLoaderWorker(connection, ip, port, view);
+        worker.execute();
+    }
+
+    private void handleInitTree() {
         String ip = view.getControlPanel().getServerAddress();
         String table = view.getControlPanel().getTableName();
         boolean fromDB = view.getControlPanel().isDatabaseSource();
         int port;
 
-        // Validazione tabella
         if (table == null || table.isEmpty()) {
             JOptionPane.showMessageDialog(
                 view,
@@ -55,12 +67,9 @@ public class MainController {
             return;
         }
 
-        // Validazione porta
         try {
             port = view.getControlPanel().getServerPort();
-            if (port <= 0 || port > 65535) {
-                throw new NumberFormatException();
-            }
+            if (port <= 0 || port > 65535) throw new NumberFormatException();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(
                 view,
@@ -71,25 +80,16 @@ public class MainController {
             return;
         }
 
-        // Reset visivo e disabilitazione comandi durante il caricamento
         view.getTreePanel().resetTree();
         view.getControlPanel().getLoadTreeButton().setEnabled(false);
         view.getControlPanel().setPredictionEnabled(false);
 
-        // Avvio del thread in background
-        InitTreeWorker worker = new InitTreeWorker(
-            connection,
-            ip,
-            port,
-            table,
-            fromDB,
-            view
-        );
+        InitTreeWorker worker = new InitTreeWorker(connection, ip, port, table, fromDB, view);
         worker.execute();
     }
-	
-	private void handlePredict() {
-		if (!connection.isConnected()) {
+
+    private void handlePredict() {
+        if (!connection.isConnected()) {
             JOptionPane.showMessageDialog(
                 view,
                 "Nessuna connessione attiva. Inizializzare prima l'albero.",
@@ -98,13 +98,12 @@ public class MainController {
             );
             return;
         }
-		// Reset vista, sidebar e disabilitazione bottone
+
         view.getTreePanel().resetTree();
         view.getSummaryPanel().setSteps(0);
         view.getSummaryPanel().setPrediction(null);
         view.getControlPanel().getPredictButton().setEnabled(false);
 
-        // Avvio del ciclo interattivo
         PredictionWorker worker = new PredictionWorker(connection, view);
         worker.execute();
     }

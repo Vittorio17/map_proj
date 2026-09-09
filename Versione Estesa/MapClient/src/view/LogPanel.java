@@ -4,40 +4,68 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
-public class LogPanel extends JPanel{
-	private JTextArea logArea;
-	private JScrollPane scrollPane;
-	
-	public LogPanel() {
-		super(new BorderLayout());
-        setPreferredSize(new Dimension(0, 150));
-        setBorder(BorderFactory.createTitledBorder("Console Log"));
-        
-        logArea = new JTextArea();
-        logArea.setEditable(false);
-        logArea.setBackground(new Color(24, 24, 24));
-        logArea.setForeground(new Color(75, 215, 120)); // Verde terminale
-        logArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+public class LogPanel extends JPanel {
 
-        scrollPane = new JScrollPane(logArea);
-        scrollPane.setBorder(null);
+    private final JTextPane textPane;
+    private final StyledDocument doc;
+
+    private static final Color COLOR_ERROR = new Color(255, 85, 85);    // Rosso
+    private static final Color COLOR_SUCCESS = new Color(80, 250, 123); // Verde
+    private static final Color COLOR_WARN = new Color(255, 184, 108);   // Arancio / Giallo
+    private static final Color COLOR_INFO = new Color(248, 248, 242);   // Bianco / Grigio chiaro
+
+    public LogPanel() {
+        setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(0, 130));
+
+        textPane = new JTextPane();
+        textPane.setEditable(false);
+        textPane.setBackground(new Color(24, 25, 27));
+        textPane.setFont(new Font("Consolas", Font.PLAIN, 12));
+        doc = textPane.getStyledDocument();
+
+        createStyle("ERROR", COLOR_ERROR);
+        createStyle("SUCCESS", COLOR_SUCCESS);
+        createStyle("WARN", COLOR_WARN);
+        createStyle("INFO", COLOR_INFO);
+
+        JScrollPane scrollPane = new JScrollPane(textPane);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Console Log"));
         add(scrollPane, BorderLayout.CENTER);
+    }
 
-        log("Client avviato. In attesa di comandi...");
-	}
-	
-	public void log(String message) {
-        logArea.append("> " + message + "\n");
-        logArea.setCaretPosition(logArea.getDocument().getLength());
+    private void createStyle(String name, Color color) {
+        Style style = textPane.addStyle(name, null);
+        StyleConstants.setForeground(style, color);
+    }
+
+    public void log(String message) {
+        String level = "INFO";
+        String lower = message.toLowerCase();
+
+        if (lower.contains("errore") || lower.contains("refused") || lower.contains("fail") || lower.contains("eccezione")) {
+            level = "ERROR";
+        } else if (lower.contains("successo") || lower.contains("completat") || lower.contains("avvio")) {
+            level = "SUCCESS";
+        } else if (lower.contains("annullata") || lower.contains("warning") || lower.contains("attesa")) {
+            level = "WARN";
+        }
+
+        try {
+            doc.insertString(doc.getLength(), "> " + message + "\n", textPane.getStyle(level));
+            textPane.setCaretPosition(doc.getLength());
+        } catch (Exception ignored) {}
     }
 
     public void clear() {
-        logArea.setText("");
+        textPane.setText("");
     }
 }
