@@ -4,10 +4,10 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 
 public class MainFrame extends JFrame {
-    private final ControlPanel controlPanel;
-    private final TreePanel treePanel;
-    private final SummaryPanel summaryPanel;
-    private final LogPanel logPanel;
+    private ControlPanel controlPanel;
+    private TreePanel treePanel;
+    private SummaryPanel summaryPanel;
+    private LogPanel logPanel;
 
     public MainFrame() {
         super("Regression Tree Dashboard");

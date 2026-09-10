@@ -21,12 +21,12 @@ import javax.swing.border.EmptyBorder;
 
 public class SummaryPanel extends JPanel {
 
-    private final JLabel tableValueLabel;
-    private final JLabel stepsValueLabel;
-    private final JLabel statusBadgeLabel;
-    private final JLabel predictionValueLabel;
-    private final DefaultListModel<String> historyModel;
-    private final JList<String> historyList;
+    private JLabel tableValueLabel;
+    private JLabel stepsValueLabel;
+    private JLabel statusBadgeLabel;
+    private JLabel predictionValueLabel;
+    private DefaultListModel<String> historyModel;
+    private JList<String> historyList;
 
     public SummaryPanel() {
         setPreferredSize(new Dimension(310, 0));

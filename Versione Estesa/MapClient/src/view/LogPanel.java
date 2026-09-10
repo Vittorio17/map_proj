@@ -14,13 +14,8 @@ import javax.swing.text.StyledDocument;
 
 public class LogPanel extends JPanel {
 
-    private final JTextPane textPane;
-    private final StyledDocument doc;
-
-    private static final Color COLOR_ERROR = new Color(255, 85, 85);    // Rosso
-    private static final Color COLOR_SUCCESS = new Color(80, 250, 123); // Verde
-    private static final Color COLOR_WARN = new Color(255, 184, 108);   // Arancio / Giallo
-    private static final Color COLOR_INFO = new Color(248, 248, 242);   // Bianco / Grigio chiaro
+    private JTextPane textPane;
+    private StyledDocument doc;
 
     public LogPanel() {
         setLayout(new BorderLayout());
@@ -32,10 +27,10 @@ public class LogPanel extends JPanel {
         textPane.setFont(new Font("Consolas", Font.PLAIN, 12));
         doc = textPane.getStyledDocument();
 
-        createStyle("ERROR", COLOR_ERROR);
-        createStyle("SUCCESS", COLOR_SUCCESS);
-        createStyle("WARN", COLOR_WARN);
-        createStyle("INFO", COLOR_INFO);
+        createStyle("ERROR", new Color(255, 85, 85));
+        createStyle("SUCCESS", new Color(80, 250, 123));
+        createStyle("WARN", new Color(255, 184, 108));
+        createStyle("INFO", new Color(248, 248, 242));
 
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Console Log"));
