@@ -1,22 +1,37 @@
+Legenda notazione UML per le relazioni
+	--|>   ereditarietà        (extends)
+	..|>   realizzazione       (implements)
+	◇--    aggregazione        (rombo vuoto): il "tutto" contiene riferimenti a elementi che possono esistere anche da soli (es. iniettati via costruttore)
+	◆--    composizione        (rombo pieno): il "tutto" possiede in modo esclusivo la parte, solitamente creandola al proprio interno; la parte muore con il tutto
+	molteplicità es.: 1 : 0..1  |  1 : 0..*  |  1 : 1
 
+==================================================================
 Package Model
+==================================================================
 
 Classe NodeDTO: rappresenta un singolo nodo dell'albero.
-	
+
+	Ereditarietà: (classe base, nessuna superclasse)
+
+	Relazioni di aggregazione/composizione:
+		◆-- composizione (self-associazione): NodeDTO ◆── 1 : 0..* children : NodeDTO
+		   ogni nodo possiede in modo esclusivo i propri figli (children = new ArrayList<>()); la lista è creata
+		   nel costruttore e i figli vengono aggiunti via addChild(). Struttura ricorsiva ad albero.
+
 	Attributi
 	- leaf: boolean
-	- splitCondition: String
-	- predictedValue: Double
-	- selected: boolean
-	- Children: List<NodeDTO>
-	
+	- splitCondition: String {null se nodo foglia}
+	- predictedValue: Double {null se nodo interno}
+	- selected: boolean {= true di default}
+	- children: List<NodeDTO>
+
 	Metodi
 	+ NodeDTO(splitCondition: String)
 	+ NodeDTO(predictedValue: Double)
 	+ setLeaf(leaf: boolean)
 	+ isLeaf(): boolean
 	+ setSplitCondition(splitCondition: String)
-	+ getSplitCondition(): String 
+	+ getSplitCondition(): String
 	+ setPredictedValue(predictedValue: Double)
 	+ getPredictedValue(): Double
 	+ getChildren(): List<NodeDTO>
@@ -25,51 +40,82 @@ Classe NodeDTO: rappresenta un singolo nodo dell'albero.
 	+ isSelected(): boolean
 	+ setSelected(selected: boolean)
 
-Classe TreeDTO
-	
+
+Classe TreeDTO: rappresenta l'albero decisionale (radice + tabella associata).
+
+	Ereditarietà: (classe base, nessuna superclasse)
+
+	Relazioni di aggregazione/composizione:
+		◆-- composizione: TreeDTO ◆── 1 : 1 root : NodeDTO
+		   un TreeDTO possiede la radice del proprio albero; la radice, a sua volta, possiede i figli
+		   (catena di composizione con NodeDTO).
+
 	Attributi
 	- root: NodeDTO
 	- tableName: String
-	
+
 	Metodi
-	+ TreeDTO(root: NodeDTO,tableName: String)
+	+ TreeDTO(root: NodeDTO, tableName: String)
 	+ setRoot(root: NodeDTO)
 	+ getRoot(): NodeDTO
 	+ setTableName(tableName: String)
 	+ getTableName(): String
 
+==================================================================
 Package View
+==================================================================
 
-Classe TreePanel
+Classe TreePanel: pannello che disegna l'albero della predizione in corso.
+
+	Ereditarietà:
+		--|> javax.swing.JPanel
+
+	Relazioni di aggregazione/composizione:
+		◇-- aggregazione: TreePanel ◇── 1 : 0..1 currentTree : TreeDTO
+		   riferimento di sola lettura per il rendering; il pannello NON possiede la struttura (il TreeDTO è
+		   costruito dai worker e passato via updateTree()).
+		(usa) java.awt.Graphics / java.awt.Graphics2D per il disegno del rendering
 
 	Attributi
-	- currentTree: TreeDTO
 	- currentTree: TreeDTO
 	- NODE_WIDTH: int = 180 statico {readonly}
 	- NODE_HEIGHT: int = 54 statico {readonly}
 	- VERTICAL_GAP: int = 75 statico {readonly}
-	
-	Metodi:
+
+	Metodi
 	+ TreePanel()
 	+ resetTree()
 	+ updateTree(treeDTO: TreeDTO)
 	# paintComponent(g: Graphics)
 	- drawTree(g2d: Graphics2D, node: NodeDTO, x: int, y: int, availableWidth: int)
 	- drawNodeBox(g2d: Graphics2D, node: NodeDTO, x: int, y: int)
-	- centerText(g2d: Graphics2D,text: String,x: int,y: int, width: int, height: int)
-Estende JPanel
+	- centerText(g2d: Graphics2D, text: String, x: int, y: int, width: int, height: int)
 
-Classe ControlPanel
+
+Classe ControlPanel: pannello di configurazione (connessione, origine dati, operazioni).
+
+	Ereditarietà:
+		--|> javax.swing.JPanel
+
+	Relazioni di aggregazione/composizione (componenti Java Swing creati nel costruttore):
+		◆-- composizione: ControlPanel ◆── 1 : 1 ipField : javax.swing.JTextField
+		◆-- composizione: ControlPanel ◆── 1 : 1 portField : javax.swing.JTextField
+		◆-- composizione: ControlPanel ◆── 1 : 1 sourceComboBox : javax.swing.JComboBox<String>
+		◆-- composizione: ControlPanel ◆── 1 : 1 tableComboBox : javax.swing.JComboBox<String>
+		◆-- composizione: ControlPanel ◆── 1 : 1 refreshTablesButton : javax.swing.JButton
+		◆-- composizione: ControlPanel ◆── 1 : 1 loadTreeButton : javax.swing.JButton
+		◆-- composizione: ControlPanel ◆── 1 : 1 predictButton : javax.swing.JButton
 
 	Attributi
 	- ipField: JTextField
 	- portField: JTextField
-	- tableComboBox : JComboBox<String>
-	- refreshTablesButton : JButton
-	- loadTreeButton: JButton	
+	- tableComboBox: JComboBox<String>
+	- refreshTablesButton: JButton
+	- loadTreeButton: JButton
 	- sourceComboBox: JComboBox<String>
 	- predictButton: JButton
-	Metodi:
+
+	Metodi
 	+ ControlPanel()
 	+ getServerAddress(): String
 	+ getServerPort(): int
@@ -77,94 +123,158 @@ Classe ControlPanel
 	+ getLoadTreeButton(): JButton
 	+ isDatabaseSource(): boolean
 	+ getPredictButton(): JButton
-	+ setPredictionEnabled(enabled: boolean)	
-	+ getRefreshTablesButton() : JButton
-	+ updateTableList(tables : List<String>)
+	+ setPredictionEnabled(enabled: boolean)
+	+ getRefreshTablesButton(): JButton
+	+ updateTableList(tables: List<String>)
 
-Estende JPanel
 
-Classe LogPanel
+Classe LogPanel: console di log in stile terminale.
+
+	Ereditarietà:
+		--|> javax.swing.JPanel
+
+	Relazioni di aggregazione/composizione (componenti Swing creati nel costruttore):
+		◆-- composizione: LogPanel ◆── 1 : 1 textPane : javax.swing.JTextPane
+		◆-- composizione: LogPanel ◆── 1 : 1 doc : javax.swing.text.StyledDocument {ottenuta da textPane}
+		◆-- composizione (locale al costruttore): LogPanel ◆── 1 : 1 scrollPane : javax.swing.JScrollPane
+		(costante) COLOR_ERROR / COLOR_SUCCESS / COLOR_WARN / COLOR_INFO : java.awt.Color — statico {readonly}
 
 	Attributi
-	- logArea: JTextArea
-	- scrollPane: JScrollPane
+	- textPane: JTextPane
+	- doc: StyledDocument
+
 	Metodi
-	+ logPanel()
+	+ LogPanel()
+	- createStyle(name: String, color: Color)
 	+ log(message: String)
-	+ clear
+	+ clear()
 
-Estende JPanel
 
-Classe SummaryPanel
-	
-	Attributi:
+Classe SummaryPanel: riquadro laterale con riepilogo sessione, stima e cronologia.
+
+	Ereditarietà:
+		--|> javax.swing.JPanel
+
+	Relazioni di aggregazione/composizione (componenti Swing creati nel costruttore):
+		◆-- composizione: SummaryPanel ◆── 1 : 1 tableValueLabel : javax.swing.JLabel
+		◆-- composizione: SummaryPanel ◆── 1 : 1 stepsValueLabel : javax.swing.JLabel
+		◆-- composizione: SummaryPanel ◆── 1 : 1 statusBadgeLabel : javax.swing.JLabel
+		◆-- composizione: SummaryPanel ◆── 1 : 1 predictionValueLabel : javax.swing.JLabel
+		◆-- composizione: SummaryPanel ◆── 1 : 1 historyModel : javax.swing.DefaultListModel<String>
+		◆-- composizione: SummaryPanel ◆── 1 : 1 historyList : javax.swing.JList<String>
+		(usa) card/pannelli ausiliari creati internamente (sessionCard, resultCard, historyCard)
+
+	Attributi
 	- tableValueLabel: JLabel
-    	- stepsValueLabel: JLabel
-    	- statusBadgeLabel: JLabel
-    	- predictionValueLabel: JLabel
-	- historyListModel: DefaultListModel<String>
+	- stepsValueLabel: JLabel
+	- statusBadgeLabel: JLabel
+	- predictionValueLabel: JLabel
+	- historyModel: DefaultListModel<String>
 	- historyList: JList<String>
-	Metodi:
+
+	Metodi
 	+ SummaryPanel()
-    	- initSessionPanel(): JPanel
-    	- initResultCard(): JPanel
-	- initHistoryPanel(): JPanel
-    	+ setStatus(status: String, connected: boolean)
-    	+ setTable(tableName: String)
-    	+ setSteps(steps: int)
-    	+ setPrediction(value: Double)
+	- createCard(title: String): JPanel
+	- initSessionCard(): JPanel
+	- initResultCard(): JPanel
+	- initHistoryCard(): JPanel
+	+ setStatus(status: String, connected: boolean)
+	+ setTable(tableName: String)
+	+ setSteps(steps: int)
+	+ setPrediction(value: Double)
 	+ addHistoryEntry(table: String, path: List<String>, pred: Double)
-    	+ reset()
+	+ reset()
 
-Estende JPanel
 
-Classe Mainframe
+Classe MainFrame: finestra principale della dashboard.
+
+	Ereditarietà:
+		--|> javax.swing.JFrame
+
+	Relazioni di aggregazione/composizione (i 4 pannelli sono creati dal costruttore):
+		◆-- composizione: MainFrame ◆── 1 : 1 controlPanel : ControlPanel
+		◆-- composizione: MainFrame ◆── 1 : 1 treePanel : TreePanel
+		◆-- composizione: MainFrame ◆── 1 : 1 summaryPanel : SummaryPanel
+		◆-- composizione: MainFrame ◆── 1 : 1 logPanel : LogPanel
 
 	Attributi
 	- controlPanel: ControlPanel
 	- treePanel: TreePanel
 	- summaryPanel: SummaryPanel
 	- logPanel: LogPanel
-	Metodi:
-	+ Mainframe()
+
+	Metodi
+	+ MainFrame()
 	+ getControlPanel(): ControlPanel
 	+ getTreePanel(): TreePanel
 	+ getSummaryPanel(): SummaryPanel
 	+ getLogPanel(): LogPanel
 
-Estende JFrame
-
-
+==================================================================
 Package Controller
+==================================================================
 
-Classe MainController
+Classe MainController: orchestratore delle operazioni (listener, avvio worker).
+
+	Ereditarietà: (classe base, nessuna superclasse)
+
+	Relazioni di aggregazione/composizione:
+		◇-- aggregazione: MainController ◇── 1 : 1 view : MainFrame
+		   la vista è iniettata nel costruttore e il suo ciclo di vita è gestito dal chiamante; il controller
+		   ne mantiene solo il riferimento.
+		◆-- composizione: MainController ◆── 1 : 1 connection : ServerConnection
+		   la connessione è creata dal controller (new ServerConnection()) e condivisa con i worker
+		   come riferimento in lettura (i worker non la possiedono).
+		(dipendenze) usa i pulsanti di ControlPanel tramite view.getControlPanel(); istanzia i worker:
+		   InitTreeWorker, PredictionWorker, TableLoaderWorker (relazione di creazione/uso)
 
 	Attributi
-	- view: Mainframe
+	- view: MainFrame
 	- connection: ServerConnection
+
 	Metodi
-	+ MainController(view: Mainframe)
+	+ MainController(view: MainFrame)
 	- initListeners()
 	- handleInitTree()
 	- handlePredict()
 	- handleRefreshTables()
 
+==================================================================
 Package Network
+==================================================================
 
-Classe ServerConnection
-	
+Classe ServerConnection: gestione del socket lato client e di serializzazione.
+
+	Ereditarietà: (classe base, nessuna superclasse)
+
+	Relazioni di aggregazione/composizione (flussi creati in connect()):
+		◆-- composizione: ServerConnection ◆── 1 : 1 socket : java.net.Socket
+		◆-- composizione: ServerConnection ◆── 1 : 1 out : java.io.ObjectOutputStream
+		◆-- composizione: ServerConnection ◆── 1 : 1 in : java.io.ObjectInputStream
+
 	Attributi
 	- socket: Socket
 	- out: ObjectOutputStream
 	- in: ObjectInputStream
+
 	Metodi
-	+ connect(ip: String,port: int)
+	+ connect(ip: String, port: int)
 	+ isConnected(): boolean
 	+ send(obj: Object)
 	+ receive(): Object
 	+ close()
 
-Classe InitTreeWorker
+
+Classe InitTreeWorker: worker di inizializzazione albero (da DB o da archivio .dmp).
+
+	Ereditarietà:
+		--|> javax.swing.SwingWorker<String, Void>
+
+	Relazioni di aggregazione/composizione:
+		◇-- aggregazione: InitTreeWorker ◇── 1 : 1 connection : ServerConnection
+		   riferimento condiviso iniettato dal costruttore (non posseduto).
+		◇-- aggregazione: InitTreeWorker ◇── 1 : 1 view : MainFrame
+		   riferimento condiviso iniettato dal costruttore (non posseduto).
 
 	Attributi
 	- connection: ServerConnection
@@ -173,18 +283,35 @@ Classe InitTreeWorker
 	- tableName: String
 	- fromDB: boolean
 	- view: MainFrame
-	Metodi:
+
+	Metodi
+	+ InitTreeWorker(connection: ServerConnection, ip: String, port: int, tableName: String, fromDB: boolean, view: MainFrame)
 	# doInBackground(): String
 	# done()
-Estende SwingWorker<String,void>
 
-Classe PredictionWorker
+
+Classe PredictionWorker: worker di una sessione di predizione interattiva.
+
+	Ereditarietà:
+		--|> javax.swing.SwingWorker<Double, NodeDTO>
+
+	Relazioni di aggregazione/composizione:
+		◇-- aggregazione: PredictionWorker ◇── 1 : 1 connection : ServerConnection (iniettata, condivisa)
+		◇-- aggregazione: PredictionWorker ◇── 1 : 1 view : MainFrame (iniettata, condivisa)
+		◆-- composizione: PredictionWorker ◆── 1 : 0..1 rootNode : NodeDTO
+		   l'albero "decision path" viene costruito dal worker durante la navigazione.
+		◆-- composizione: PredictionWorker ◆── 1 : 0..1 currentNode : NodeDTO
+		   ramo corrente lungo l'espansione dell'albero.
+		(dipendenze) crea istanze di NodeDTO e TreeDTO; usa javax.swing.JOptionPane per le domande all'utente.
+		(usa) composizione/creazione di TreeDTO passato poi a TreePanel via view.
 
 	Attributi
 	- connection: ServerConnection
-	- view: Mainframe
+	- view: MainFrame
 	- rootNode: NodeDTO
-    	- currentNode: NodeDTO
+	- currentNode: NodeDTO
+	- visitedConditions: List<String>
+
 	Metodi
 	+ PredictionWorker(connection: ServerConnection, view: MainFrame)
 	# doInBackground(): Double
@@ -195,32 +322,46 @@ Classe PredictionWorker
 	# process(chunks: List<NodeDTO>)
 	# done()
 
-Estende SwingWorker<Double, NodeDTO>
 
-Inner class UserQueryDialog di PredictionWorker
-	
-	Attributi
-	- queryText: String
-	- choice: int = -1
-	Metodi
-	+ UserQueryDialog(queryText: String)
-	+ run()
-	+ getChoice(): int
+	Inner class UserQueryDialog di PredictionWorker — dialogo modale per la scelta del ramo (classe privata).
 
-Implementa Runnable
+		Realizzazione:
+			..|> java.lang.Runnable
 
-Classe TableLoaderWorker
-	
+		Attributi
+		- queryText: String
+		- choice: int = -1
+
+		Metodi
+		+ UserQueryDialog(queryText: String)
+		+ run()
+		+ getChoice(): int
+
+
+Classe TableLoaderWorker: worker di caricamento dell'elenco tabelle dal database.
+
+	Ereditarietà:
+		--|> javax.swing.SwingWorker<List<String>, Void>
+
+	Relazioni di aggregazione/composizione:
+		◇-- aggregazione: TableLoaderWorker ◇── 1 : 1 connection : ServerConnection (iniettata, condivisa)
+		◇-- aggregazione: TableLoaderWorker ◇── 1 : 1 view : MainFrame (iniettata, condivisa)
+
 	Attributi
 	- connection: ServerConnection
 	- ip: String
 	- port: int
 	- view: MainFrame
+
 	Metodi
-	+ TableLoaderWorker(connection: ServerConnection,ip:String,port:int,view:MainFrame)
-	# doInBackground() : List<String>
+	+ TableLoaderWorker(connection: ServerConnection, ip: String, port: int, view: MainFrame)
+	# doInBackground(): List<String>
 	# done()
 
-Estende SwingWorker<String,Void>
-
-
+==================================================================
+Riepilogo gerarchie di ereditarietà / realizzazione
+==================================================================
+	javax.swing.JPanel                <-- TreePanel, ControlPanel, LogPanel, SummaryPanel
+	javax.swing.JFrame                <-- MainFrame
+	javax.swing.SwingWorker           <-- InitTreeWorker, PredictionWorker, TableLoaderWorker
+	java.lang.Runnable (implements)   <-- UserQueryDialog (inner di PredictionWorker)

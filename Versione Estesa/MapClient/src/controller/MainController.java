@@ -19,7 +19,7 @@ public class MainController {
         initListeners();
     }
 
-    public void initListeners() {
+    private void initListeners() {
         view.getControlPanel().getLoadTreeButton().addActionListener(e -> handleInitTree());
         view.getControlPanel().getPredictButton().addActionListener(e -> handlePredict());
         view.getControlPanel().getRefreshTablesButton().addActionListener(e -> handleRefreshTables());
