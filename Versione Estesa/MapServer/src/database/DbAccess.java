@@ -98,15 +98,15 @@ public class DbAccess {
      * @throws SQLException se si verifica un errore durante l'accesso al database
      */
     public List<String> getAvailableTables() throws SQLException, DatabaseConnectionException {
-        List<String> tables = new ArrayList<>();
-        if (conn == null || conn.isClosed()) {
-            initConnection(); // Solleva DatabaseConnectionException
+    	if (this.conn == null || this.conn.isClosed()) {
+            throw new SQLException("Connessione al database chiusa o non inizializzata.");
         }
         
-        try (java.sql.Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")) {
+        List<String> tables = new ArrayList<>();
+        DatabaseMetaData metaData = this.conn.getMetaData();
+        try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
             while (rs.next()) {
-                tables.add(rs.getString(1));
+                tables.add(rs.getString("TABLE_NAME"));
             }
         }
         return tables;

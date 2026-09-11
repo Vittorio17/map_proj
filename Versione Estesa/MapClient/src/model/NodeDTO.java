@@ -17,6 +17,7 @@ public class NodeDTO{
 	private Double predictedValue;
 	/** Lista dei nodi figli. */
 	private List<NodeDTO> children;
+	/** Indica se il nodo fa parte del percorso decisionale selezionato dall'utente. */
 	private boolean selected = true;
 	
 	/**
@@ -129,10 +130,19 @@ public class NodeDTO{
 		return ("Predizione: " + predictedValue);
 	}
 	
+	/**
+     * Verifica se il nodo è contrassegnato come selezionato nel percorso decisionale.
+     * @return true se il nodo è selezionato, false altrimenti
+     */
 	public boolean isSelected() {
         return selected;
     }
 
+	/**
+     * Imposta lo stato di selezione del nodo per la visualizzazione del percorso.
+     *
+     * @param selected true se il nodo deve risultare selezionato, false altrimenti
+     */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

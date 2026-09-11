@@ -12,11 +12,21 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+/**
+ * Pannello grafico che funge da console di log dell'applicazione.
+ * Mostra messaggi di stato, avvisi ed errori colorati in base al contenuto,
+ */
 public class LogPanel extends JPanel {
-
+	/** Area di testo formattata non modificabile per la visualizzazione dei log. */
     private JTextPane textPane;
+    /** Modello del documento associato all'area di testo per la gestione degli stili. */
     private StyledDocument doc;
 
+    /**
+     * Costruttore del pannello di log.
+     * Inizializza il componente testuale, definisce la palette di colori per i diversi
+     * livelli di severità e inserisce la console all'interno di un pannello a scorrimento.
+     */
     public LogPanel() {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(0, 130));
@@ -37,11 +47,24 @@ public class LogPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    /**
+     * Registra un nuovo stile di formattazione del testo impostando il colore di primo piano.
+     *
+     * @param name identificatore univoco dello stile
+     * @param color colore del testo associato allo stile
+     */
     private void createStyle(String name, Color color) {
         Style style = textPane.addStyle(name, null);
         StyleConstants.setForeground(style, color);
     }
 
+    /**
+     * Inserisce una nuova riga di messaggio nella console.
+     * Deduce automaticamente il livello di log (ERROR, SUCCESS, WARN, INFO) analizzando
+     * le parole chiave nel testo e aggiorna il cursore a fine documento.
+     *
+     * @param message stringa da registrare nel terminale visivo
+     */
     public void log(String message) {
         String level = "INFO";
         String lower = message.toLowerCase();
@@ -60,6 +83,9 @@ public class LogPanel extends JPanel {
         } catch (Exception ignored) {}
     }
 
+    /**
+     * Pulisce l'intera area di testo eliminando tutti i messaggi registrati.
+     */
     public void clear() {
         textPane.setText("");
     }

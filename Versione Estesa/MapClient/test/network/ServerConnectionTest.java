@@ -40,13 +40,11 @@ class ServerConnectionTest {
     }
 
     /**
-     * Helper: accetta una connessione e inizializza ObjectOutputStream/ObjectInputStream
+     * accetta una connessione e inizializza ObjectOutputStream/ObjectInputStream
      * sul lato server, inviando l'header di serializzazione.
      */
     private Socket acceptAndInit() throws IOException {
         Socket accepted = mockServer.accept();
-        // Deve creare l'ObjectOutputStream PRIMA che il client crei l'ObjectInputStream,
-        // altrimenti il costruttore di ObjectInputStream blocca in attesa dell'header.
         ObjectOutputStream serverOut = new ObjectOutputStream(accepted.getOutputStream());
         serverOut.flush();
         ObjectInputStream serverIn = new ObjectInputStream(accepted.getInputStream());
@@ -192,4 +190,5 @@ class ServerConnectionTest {
         serverThread2.join(2000);
         mockServer1.close();
     }
+    
 }

@@ -15,18 +15,24 @@ import javax.swing.JComboBox;
  * e per l'inserimento del nome della tabella.
  */
 public class ControlPanel extends JPanel {
-
+	/** Campo di testo per l'inserimento dell'indirizzo IP del server. */
 	private JTextField ipField;
+	/** Campo di testo per l'inserimento della porta del server. */
     private JTextField portField;
+    /** Menu a discesa per la selezione dell'origine dei dati */
     private JComboBox<String> sourceComboBox;
+    /** Pulsante per avviare l'inizializzazione o il caricamento dell'albero sul server. */
     private JButton loadTreeButton;
+    /** Pulsante per avviare una nuova sessione interattiva di predizione. */
     private JButton predictButton;
+    /** Menu a discesa editabile per selezionare o digitare il nome della tabella o file. */
     private JComboBox<String> tableComboBox;
+    /** Pulsante per richiedere al server l'elenco aggiornato delle tabelle del database. */
     private JButton refreshTablesButton;
 
     /**
      * Costruttore del pannello di configurazione.
-     * Inizializza i campi di testo e il pulsante.
+     * Inizializza i componenti grafici, imposta il layout e compone l'interfaccia.
      */
     public ControlPanel() {
         super(new FlowLayout(FlowLayout.LEFT, 10, 8));
@@ -40,7 +46,7 @@ public class ControlPanel extends JPanel {
         String[] options = {"Da Database", "Da Archivio (.dmp)"};
         sourceComboBox = new JComboBox<>(options);
 
-        // Menu tabelle con digitazione e pulsante refresh
+        // Menu tabelle con digitazione
         tableComboBox = new JComboBox<>(new String[]{"provac"});
         tableComboBox.setEditable(true);
         tableComboBox.setPreferredSize(new Dimension(130, 26));
@@ -87,7 +93,7 @@ public class ControlPanel extends JPanel {
      * @throws NumberFormatException se il valore inserito non è un numero
      */
     public int getServerPort() {
-        return Integer.parseInt(portField.getText());
+    	return Integer.parseInt(portField.getText().trim());
     }
 
     /**
@@ -100,10 +106,20 @@ public class ControlPanel extends JPanel {
         return (selected != null) ? selected.toString().trim() : "";
     }
 
+    /**
+     * Restituisce il pulsante per il recupero delle tabelle disponibili.
+     *
+     * @return pulsante di refresh delle tabelle
+     */
     public JButton getRefreshTablesButton() {
         return refreshTablesButton;
     }
     
+    /**
+     * Aggiorna il menu a tendina delle tabelle con l'elenco specificato.
+     *
+     * @param tables lista dei nomi delle tabelle da mostrare
+     */
     public void updateTableList(List<String> tables) {
         tableComboBox.removeAllItems();
         for (String t : tables) {
@@ -123,14 +139,29 @@ public class ControlPanel extends JPanel {
         return loadTreeButton;
     }
 
+    /**
+     * Verifica se la sorgente selezionata dall'utente è il database relazionale.
+     *
+     * @return true se l'opzione selezionata è da database, false se da file dump
+     */
     public boolean isDatabaseSource() {
         return sourceComboBox.getSelectedIndex() == 0;
     }
 
+    /**
+     * Restituisce il pulsante per avviare una predizione.
+     *
+     * @return pulsante per la predizione
+     */
     public JButton getPredictButton() {
         return predictButton;
     }
 
+    /**
+     * Modifica lo stato di abilitazione del pulsante di predizione.
+     *
+     * @param enabled true per abilitare il pulsante, false per disabilitarlo
+     */
     public void setPredictionEnabled(boolean enabled) {
         predictButton.setEnabled(enabled);
     }

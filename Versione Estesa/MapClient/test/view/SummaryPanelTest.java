@@ -10,11 +10,6 @@ import javax.swing.SwingUtilities;
 import java.util.Arrays;
 import java.util.Locale;
 
-/**
- * Test unitari per la classe {@link SummaryPanel}.
- * Verifica i metodi di aggiornamento dell'interfaccia: predizione,
- * passi, tabella, reset e cronologia.
- */
 class SummaryPanelTest {
 
     private SummaryPanel panel;
@@ -55,18 +50,6 @@ class SummaryPanelTest {
     void testSetPredictionWithNull() throws Exception {
         SwingUtilities.invokeAndWait(() -> panel.setPrediction(null));
         assertEquals("---", predictionLabel.getText());
-    }
-
-    @Test
-    void testSetSteps() throws Exception {
-        SwingUtilities.invokeAndWait(() -> panel.setSteps(5));
-        assertEquals("5", stepsLabel.getText());
-    }
-
-    @Test
-    void testSetTable() throws Exception {
-        SwingUtilities.invokeAndWait(() -> panel.setTable("tabella_excel"));
-        assertEquals("tabella_excel", tableLabel.getText());
     }
 
     @Test

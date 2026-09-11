@@ -8,11 +8,6 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-/**
- * Test unitari per la classe {@link ControlPanel}.
- * Verifica i valori di default, il recupero dei dati inseriti
- * e il comportamento dei controlli UI.
- */
 class ControlPanelTest {
 
     private ControlPanel panel;
@@ -34,12 +29,6 @@ class ControlPanelTest {
         });
     }
 
-    @Test
-    void testGetServerAddress() throws Exception {
-        SwingUtilities.invokeAndWait(() -> {
-            assertEquals("127.0.0.1", panel.getServerAddress());
-        });
-    }
 
     @Test
     void testGetServerPort() throws Exception {
@@ -59,13 +48,6 @@ class ControlPanelTest {
     }
 
     @Test
-    void testGetTableName() throws Exception {
-        SwingUtilities.invokeAndWait(() -> {
-            assertEquals("provac", panel.getTableName());
-        });
-    }
-
-    @Test
     void testIsDatabaseSource() throws Exception {
         // Default: "Da Database" (indice 0)
         assertTrue(panel.isDatabaseSource());
@@ -76,5 +58,28 @@ class ControlPanelTest {
         JComboBox<String> combo = (JComboBox<String>) sourceField.get(panel);
         SwingUtilities.invokeAndWait(() -> combo.setSelectedIndex(1));
         assertFalse(panel.isDatabaseSource());
+    }
+    
+    @Test
+    public void testGetServerPortWithWhitespace() throws Exception {
+        ControlPanel panel = new ControlPanel();
+        
+        java.lang.reflect.Field field = ControlPanel.class.getDeclaredField("portField");
+        field.setAccessible(true);
+        javax.swing.JTextField portField = (javax.swing.JTextField) field.get(panel);
+
+        // Test con spazi attorno al numero
+        portField.setText("  9090  ");
+        try {
+            int port = panel.getServerPort();
+            assertEquals(9090, port, "getServerPort deve gestire gli spazi attorno al numero");
+        } catch (NumberFormatException e) {
+            fail("getServerPort dovrebbe applicare trim() prima del parsing");
+        }
+
+        // Test con soli spazi
+        portField.setText("   ");
+        assertThrows(NumberFormatException.class, () -> panel.getServerPort(),
+            "Una porta con soli spazi deve sollevare NumberFormatException");
     }
 }

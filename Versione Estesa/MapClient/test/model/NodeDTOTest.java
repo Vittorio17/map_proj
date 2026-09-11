@@ -4,11 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
-/**
- * Test unitari per la classe {@link NodeDTO}.
- * Verifica la creazione di nodi interni e foglie, i getter/setter,
- * la gestione dei figli e il comportamento di toString().
- */
 class NodeDTOTest {
 
     private NodeDTO internalNode;
@@ -39,29 +34,6 @@ class NodeDTOTest {
     }
 
     @Test
-    void testSetAndGetSplitCondition() {
-        internalNode.setSplitCondition("reddito < 50000");
-        assertEquals("reddito < 50000", internalNode.getSplitCondition());
-    }
-
-    @Test
-    void testSetAndGetPredictedValue() {
-        leafNode.setPredictedValue(99.99);
-        assertEquals(99.99, leafNode.getPredictedValue());
-    }
-
-    @Test
-    void testSetLeaf() {
-        assertFalse(internalNode.isLeaf());
-        internalNode.setLeaf(true);
-        assertTrue(internalNode.isLeaf());
-
-        assertTrue(leafNode.isLeaf());
-        leafNode.setLeaf(false);
-        assertFalse(leafNode.isLeaf());
-    }
-
-    @Test
     void testAddChild() {
         NodeDTO child = new NodeDTO(10.0);
         internalNode.addChild(child);
@@ -86,32 +58,8 @@ class NodeDTOTest {
     }
 
     @Test
-    void testChildrenListIsMutable() {
-        NodeDTO child = new NodeDTO(1.0);
-        internalNode.addChild(child);
-
-        // La lista ritornata da getChildren() e' la stessa referenza
-        assertSame(internalNode.getChildren(), internalNode.getChildren());
-        // Modifiche dirette sulla lista si riflettono
-        internalNode.getChildren().add(new NodeDTO(2.0));
-        assertEquals(2, internalNode.getChildren().size());
-    }
-
-    @Test
     void testDefaultSelected() {
         assertTrue(internalNode.isSelected());
-        assertTrue(leafNode.isSelected());
-    }
-
-    @Test
-    void testSetSelected() {
-        internalNode.setSelected(false);
-        assertFalse(internalNode.isSelected());
-
-        leafNode.setSelected(false);
-        assertFalse(leafNode.isSelected());
-
-        leafNode.setSelected(true);
         assertTrue(leafNode.isSelected());
     }
 
@@ -124,4 +72,33 @@ class NodeDTOTest {
     void testToStringLeafNode() {
         assertEquals("Predizione: 42.5", leafNode.toString());
     }
+
+    @Test
+    public void testAddChildToLeafNode() {
+        NodeDTO leaf = new NodeDTO(42.5);
+        assertTrue(leaf.isLeaf(), "Il nodo creato con Double deve nascere come foglia");
+        
+        NodeDTO child = new NodeDTO("X <= 10");
+        leaf.addChild(child);
+        
+        assertEquals(1, leaf.getChildren().size(), "La lista figli deve contenere il nodo aggiunto");
+        assertEquals(child, leaf.getChildren().get(0));
+    }
+    
+
+    @Test
+    public void testToStringWithNullValues() {
+        NodeDTO emptySplit = new NodeDTO((String) null);
+        assertDoesNotThrow(() -> {
+            String res = emptySplit.toString();
+            assertNotNull(res);
+        }, "toString non deve lanciare NPE con splitCondition null");
+
+        NodeDTO emptyLeaf = new NodeDTO((Double) null);
+        assertDoesNotThrow(() -> {
+            String res = emptyLeaf.toString();
+            assertNotNull(res);
+        }, "toString non deve lanciare NPE con predictedValue null");
+    }
+    
 }

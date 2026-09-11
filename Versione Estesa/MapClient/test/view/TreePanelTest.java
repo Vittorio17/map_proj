@@ -10,10 +10,6 @@ import model.TreeDTO;
 import javax.swing.SwingUtilities;
 import java.lang.reflect.Field;
 
-/**
- * Test unitari per la classe {@link TreePanel}.
- * Verifica lo stato iniziale, l'aggiornamento e il reset dell'albero visualizzato.
- */
 class TreePanelTest {
 
     private TreePanel panel;

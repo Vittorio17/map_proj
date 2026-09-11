@@ -1,2 +1,2 @@
-java -jar MapClient.jar localhost 8080
+java -jar MapClient.jar
 pause

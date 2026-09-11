@@ -9,16 +9,34 @@ import network.ServerConnection;
 import network.TableLoaderWorker;
 import view.MainFrame;
 
+/**
+ * Controller principale dell'architettura MVC per il client.
+ * Gestisce l'interazione tra l'interfaccia grafica e i servizi di rete,
+ * registrando i listener degli eventi sui componenti dell'interfaccia e coordinando
+ * l'avvio dei worker asincroni in background.
+ */
 public class MainController {
+	/** Riferimento alla finestra principale dell'applicazione. */
     private MainFrame view;
+    /** Istanza condivisa per la gestione della connessione socket con il server remoto. */
     private ServerConnection connection;
-
+    
+    /**
+     * Costruttore che inizializza la finestra, crea l'oggetto per la connessione al server
+     * e registra i gestori degli eventi.
+     *
+     * @param view finestra principale dell'applicazione
+     */
     public MainController(MainFrame view) {
         this.view = view;
         this.connection = new ServerConnection();
         initListeners();
     }
 
+    /**
+     * Inizializza e collega i listener per le azioni dei pulsanti dell'interfaccia
+     * e per gli eventi di chiusura della finestra.
+     */
     private void initListeners() {
         view.getControlPanel().getLoadTreeButton().addActionListener(e -> handleInitTree());
         view.getControlPanel().getPredictButton().addActionListener(e -> handlePredict());
@@ -32,6 +50,11 @@ public class MainController {
         });
     }
 
+    /**
+     * Gestisce l'evento di richiesta dell'elenco delle tabelle al database.
+     * Valida la porta specificata dall'utente, disabilita temporaneamente il relativo pulsante
+     * e delega l'operazione a TableLoaderWorker.
+     */
     private void handleRefreshTables() {
         String ip = view.getControlPanel().getServerAddress();
         int port;
@@ -51,6 +74,11 @@ public class MainController {
         worker.execute();
     }
 
+    /**
+     * Gestisce l'evento di inizializzazione o caricamento dell'albero.
+     * Effettua la validazione dei campi di input (nome tabella/file e porta),
+     * resetta lo stato dell'interfaccia e avvia InitTreeWorker in background.
+     */
     private void handleInitTree() {
         String ip = view.getControlPanel().getServerAddress();
         String table = view.getControlPanel().getTableName();
@@ -88,6 +116,11 @@ public class MainController {
         worker.execute();
     }
 
+    /**
+     * Gestisce l'avvio della sessione di predizione interattiva.
+     * Verifica l'effettiva presenza di una connessione attiva con il server,
+     * predispone i pannelli per una nuova stima e avvia PredictionWorker.
+     */
     private void handlePredict() {
         if (!connection.isConnected()) {
             JOptionPane.showMessageDialog(

@@ -12,28 +12,55 @@ import javax.swing.JPanel;
 import model.NodeDTO;
 import model.TreeDTO;
 
+/**
+ * Pannello grafico dedicato al rendering visuale dell'albero.
+ * Gestisce il disegno ricorsivo dei nodi (intermedi e foglie) e dei collegamenti,
+ * calcolando dinamicamente la disposizione nello spazio disponibile.
+ */
 public class TreePanel extends JPanel {
-
+	/** Dati dell'albero corrente da rappresentare a video. */
 	private TreeDTO currentTree;
-
+	/** Larghezza fissa in pixel del rettangolo che rappresenta ciascun nodo. */
     private static final int NODE_WIDTH = 180;
+    /** Altezza fissa in pixel del rettangolo che rappresenta ciascun nodo. */
     private static final int NODE_HEIGHT = 54;
+    /** Distanza verticale in pixel tra i livelli dell'albero. */
     private static final int VERTICAL_GAP = 75;
     
+    /**
+     * Costruttore del pannello di visualizzazione dell'albero.
+     * Imposta lo sfondo bianco per l'area di disegno.
+     */
     public TreePanel() {
         setBackground(Color.WHITE);
     }
 
+    /**
+     * Reimposta lo stato dell'albero a null e forza il ridisegno del pannello,
+     * mostrando il messaggio di attesa.
+     */
     public void resetTree() {
         this.currentTree = null;
         repaint();
     }
 
+    /**
+     * Aggiorna l'albero da visualizzare e richiede il ridisegno dei componenti.
+     *
+     * @param treeDTO oggetto di trasferimento dati contenente la radice dell'albero
+     */
     public void updateTree(TreeDTO treeDTO) {
         this.currentTree = treeDTO;
         repaint();
     }
     
+    /**
+     * Esegue il rendering personalizzato dell'albero sul pannello.
+     * Se l'albero non è presente, disegna un testo segnaposto al centro;
+     * altrimenti avvia il disegno ricorsivo partendo dalla radice.
+     *
+     * @param g contesto grafico per le operazioni di disegno
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -58,36 +85,51 @@ public class TreePanel extends JPanel {
         drawTree(g2d, currentTree.getRoot(), startX, startY, getWidth());
     }
     
+    /**
+     * Disegna ricorsivamente un nodo, le linee di collegamento e i suoi sottoalberi figli.
+     *
+     * @param g2d contesto grafico 2D
+     * @param node nodo corrente da disegnare
+     * @param x coordinata orizzontale del centro del nodo
+     * @param y coordinata verticale superiore del nodo
+     * @param availableWidth larghezza orizzontale disponibile per il sottoalbero corrente
+     */
     private void drawTree(Graphics2D g2d, NodeDTO node, int x, int y, int availableWidth) {
-        List<NodeDTO> children = node.getChildren();
+    	List<NodeDTO> children = node.getChildren();
+        int numChildren = children.size();
 
-        if (children.size() == 1) {
+        if (numChildren == 1) {
             int childX = x;
             int childY = y + NODE_HEIGHT + VERTICAL_GAP;
             g2d.setColor(Color.BLACK);
             g2d.drawLine(x, y + NODE_HEIGHT, childX, childY);
             drawTree(g2d, children.get(0), childX, childY, availableWidth);
-        } else if (children.size() >= 2) {
-            int offset = availableWidth / 4;
+        } else if (numChildren > 1) {
+            int slotWidth = availableWidth / numChildren;
+            int startSlotX = x - (availableWidth / 2);
+            int childY = y + NODE_HEIGHT + VERTICAL_GAP;
 
-            // Ramo sinistro (opzione 0)
-            int leftX = x - offset;
-            int leftY = y + NODE_HEIGHT + VERTICAL_GAP;
-            g2d.setColor(Color.BLACK);
-            g2d.drawLine(x, y + NODE_HEIGHT, leftX, leftY);
-            drawTree(g2d, children.get(0), leftX, leftY, availableWidth / 2);
+            for (int i = 0; i < numChildren; i++) {
+                int childX = startSlotX + (i * slotWidth) + (slotWidth / 2);
 
-            // Ramo destro (opzione 1)
-            int rightX = x + offset;
-            int rightY = y + NODE_HEIGHT + VERTICAL_GAP;
-            g2d.setColor(Color.BLACK);
-            g2d.drawLine(x, y + NODE_HEIGHT, rightX, rightY);
-            drawTree(g2d, children.get(1), rightX, rightY, availableWidth / 2);
+                g2d.setColor(Color.BLACK);
+                g2d.drawLine(x, y + NODE_HEIGHT, childX, childY);
+                drawTree(g2d, children.get(i), childX, childY, slotWidth);
+            }
         }
 
         drawNodeBox(g2d, node, x - (NODE_WIDTH / 2), y);
     }
     
+    /**
+     * Disegna la casella grafica per il nodo specificato, applicando colori,
+     * bordi e stili tipografici differenti a seconda che si tratti di una foglia o di un nodo intermedio.
+     *
+     * @param g2d contesto grafico 2D
+     * @param node nodo da rappresentare nel box
+     * @param x coordinata orizzontale dell'angolo superiore sinistro del box
+     * @param y coordinata verticale dell'angolo superiore sinistro del box
+     */
     private void drawNodeBox(Graphics2D g2d, NodeDTO node, int x, int y) {
         if (node.isLeaf()) {
             // Nodo Foglia
@@ -115,6 +157,16 @@ public class TreePanel extends JPanel {
         }
     }
     
+    /**
+     * Centra orizzontalmente e verticalmente una stringa di testo all'interno di un'area rettangolare.
+     *
+     * @param g2d contesto grafico 2D
+     * @param text stringa di testo da disegnare
+     * @param x coordinata orizzontale dell'area
+     * @param y coordinata verticale dell'area
+     * @param width larghezza del rettangolo di riferimento
+     * @param height altezza del rettangolo di riferimento
+     */
     private void centerText(Graphics2D g2d, String text, int x, int y, int width, int height) {
         if (text == null) return;
         FontMetrics fm = g2d.getFontMetrics();

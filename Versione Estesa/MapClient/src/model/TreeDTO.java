@@ -1,7 +1,7 @@
 package model;
 
 /**
- * Rappresenta un albero decisionale, costituito da un nodo radice
+ * Rappresenta un albero di regressione, costituito da un nodo radice
  * e associato a una tabella.
  */
 public class TreeDTO{
