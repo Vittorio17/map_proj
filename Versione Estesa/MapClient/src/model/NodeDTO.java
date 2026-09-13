@@ -114,6 +114,7 @@ public class NodeDTO{
 	 */
 	public void addChild(NodeDTO child) {
 		children.add(child);
+		leaf = false;
 	}
 	
 	/**

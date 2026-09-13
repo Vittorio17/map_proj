@@ -77,10 +77,11 @@ class NodeDTOTest {
     public void testAddChildToLeafNode() {
         NodeDTO leaf = new NodeDTO(42.5);
         assertTrue(leaf.isLeaf(), "Il nodo creato con Double deve nascere come foglia");
-        
+
         NodeDTO child = new NodeDTO("X <= 10");
         leaf.addChild(child);
-        
+
+        assertFalse(leaf.isLeaf(), "Un nodo con figli non deve più essere una foglia");
         assertEquals(1, leaf.getChildren().size(), "La lista figli deve contenere il nodo aggiunto");
         assertEquals(child, leaf.getChildren().get(0));
     }
