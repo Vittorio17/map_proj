@@ -1,6 +1,7 @@
 package database;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.sql.SQLException;
@@ -46,19 +47,25 @@ class TableDataTest {
 
     @Test
     void testGetDistinctColumnValuesString() throws Exception {
-        Column colonna = new Column("X", "string"); 
+        Column colonna = new Column("X", "string");
         Set<Object> valoriDistinti = tableData.getDistinctColumnValues("provaC", colonna);
-        
+
         assertNotNull(valoriDistinti, "Il set dei valori distinti non deve essere nullo");
         assertFalse(valoriDistinti.isEmpty(), "Il set deve contenere i valori alfanumerici unici della colonna X");
+        for (Object v : valoriDistinti) {
+            assertInstanceOf(String.class, v, "I valori della colonna testuale X devono essere di tipo String");
+        }
     }
-    
+
     @Test
     void testGetDistinctColumnValuesNumber() throws Exception {
-        Column colonna = new Column("Y", "number"); 
+        Column colonna = new Column("Y", "number");
         Set<Object> valoriDistinti = tableData.getDistinctColumnValues("provaC", colonna);
-        
+
         assertNotNull(valoriDistinti, "Il set dei valori distinti non deve essere nullo");
         assertFalse(valoriDistinti.isEmpty(), "Il set deve contenere i valori numerici unici della colonna Y");
+        for (Object v : valoriDistinti) {
+            assertInstanceOf(Double.class, v, "I valori della colonna numerica Y devono essere di tipo Double");
+        }
     }
 }

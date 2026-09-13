@@ -62,11 +62,12 @@ public class NodeTest {
 
     /**
      * Verifica la formattazione prodotta dal metodo toString.
+     * Il formato esatto atteso e': "Nodo: [Examples:<begin>-<end>] variance:<variance>".
      */
     @Test
     public void testToString() {
         String rappresentazione = nodo.toString();
-        assertTrue(rappresentazione.contains("Examples:" + inizio + "-" + fine), "Il metodo toString deve includere il range degli indici degli esempi coperti");
-        assertTrue(rappresentazione.contains("variance:"), "Il metodo toString deve stampare l'etichetta della varianza");
+        String attesa = "Nodo: [Examples:" + inizio + "-" + fine + "] variance:" + nodo.getVariance();
+        assertEquals(attesa, rappresentazione, "Il metodo toString deve restituire esattamente il formato previsto");
     }
 }

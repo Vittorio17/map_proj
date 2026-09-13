@@ -12,7 +12,7 @@ class TrainingDataExceptionTest {
      * il messaggio di errore passato in input.
      */
     @Test
-    void trainingDataException_message() {
+    void testExceptionMessage() {
         TrainingDataException ex = new TrainingDataException("errore test");
         assertEquals("errore test", ex.getMessage());
     }

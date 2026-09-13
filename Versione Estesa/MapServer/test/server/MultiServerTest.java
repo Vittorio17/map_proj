@@ -1,8 +1,10 @@
 package server;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.ServerSocket;
 import java.net.Socket;
-import org.junit.jupiter.api.DisplayName;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,21 +14,26 @@ class MultiServerTest {
 
     @Test
     void testServerAvvioEConnessione() throws Exception {
-        
+
+        // Ottiene una porta effimera libera per evitare conflitti tra esecuzioni parallele
+        final int port;
+        try (ServerSocket temp = new ServerSocket(0)) {
+            port = temp.getLocalPort();
+        }
+
         // Avviamo il server in un thread separato per non bloccare JUnit
         Thread serverThread = new Thread() {
             public void run() {
-                new MultiServer(8099);
+                new MultiServer(port);
             }
         };
         serverThread.start();
         Thread.sleep(500);
 
-        Socket clientSocket = new Socket("localhost", 8099);
-
-        assertTrue(clientSocket.isConnected(), "Il client deve risultare connesso al server in ascolto");
-
-        clientSocket.close();
-        serverThread.interrupt();
+        try (Socket clientSocket = new Socket("localhost", port)) {
+            assertTrue(clientSocket.isConnected(), "Il client deve risultare connesso al server in ascolto");
+        } finally {
+            serverThread.interrupt();
+        }
     }
 }

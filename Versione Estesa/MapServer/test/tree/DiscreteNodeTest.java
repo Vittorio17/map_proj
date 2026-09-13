@@ -15,8 +15,7 @@ public class DiscreteNodeTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        trainingSet = new Data("provaC"); 
-        String[] valoriDiscreti = {"A", "B"}; 
+        trainingSet = new Data("provaC");
         DiscreteAttribute attribute = (DiscreteAttribute) trainingSet.getExplanatoryAttribute(0);
         node = new DiscreteNode(trainingSet, 0, trainingSet.getNumberOfExamples() - 1, attribute);
     }

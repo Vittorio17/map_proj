@@ -1,5 +1,6 @@
 package database;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,8 +63,11 @@ class DbAccessTest {
     void testGetAvailableTablesConnectionClosed() {
         dbAccess.closeConnection();
 
-        assertThrows(SQLException.class, () -> {
+        SQLException ex = assertThrows(SQLException.class, () -> {
             dbAccess.getAvailableTables();
         }, "L'invocazione su una connessione chiusa deve sollevare una SQLException.");
+
+        assertEquals("Connessione al database chiusa o non inizializzata.", ex.getMessage(),
+            "Il messaggio della SQLException deve essere esattamente quello cablato nella classe DbAccess");
     }
 }

@@ -70,13 +70,25 @@ public class SplitNodeTest {
     }
 
     /**
-     * Verifica che la query predittiva venga formulata sintatticamente in modo corretto.
+     * Verifica che la query predittiva venga formulata rispettando esattamente
+     * il formato "<i>:<nomeAttributo><comparator><splitValue>\n" per ciascun ramo.
      */
     @Test
     public void testFormulateQuery() {
         String query = nodoSplit.formulateQuery();
-        assertTrue(query.contains(attributo.getName()), "La query finale deve contenere il nome dell'attributo di split testato");
-        assertTrue(query.contains(":"), "La query deve seguire il formato di output atteso con i separatori");
+
+        StringBuilder attesa = new StringBuilder();
+        for (int i = 0; i < nodoSplit.getNumberOfChildren(); i++) {
+            SplitNode.SplitInfo info = nodoSplit.getSplitInfo(i);
+            attesa.append(i)
+                  .append(":")
+                  .append(attributo.getName())
+                  .append(info.getComparator())
+                  .append(info.getSplitValue())
+                  .append("\n");
+        }
+
+        assertEquals(attesa.toString(), query, "La query deve concatena '<i>:<nomeAttributo><comparator><splitValue>' per ogni ramo");
     }
 
     /**

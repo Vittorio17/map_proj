@@ -23,6 +23,9 @@ public class ContinuousNodeTest {
                 break;
             }
         }
+        if (attribute == null) {
+            throw new IllegalStateException("Il dataset 'provaC' non contiene alcun attributo continuo");
+        }
         node = new ContinuousNode(trainingSet, 0, trainingSet.getNumberOfExamples() - 1, attribute);
     }
 

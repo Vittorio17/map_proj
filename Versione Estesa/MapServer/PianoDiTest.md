@@ -106,7 +106,7 @@
 | Atteso | `getMessage()` restituisce esattamente il testo fornito al costruttore |
 
 
-## Package: `Database` (continua)
+## Package: `database` (continua)
 
 ### Classe Testata: `Column`
 
@@ -249,7 +249,7 @@
 | Azione | asserzione di tipo (`instanceof`) |
 | Atteso | l'istanza è riconosciuta come sottoclasse di `java.lang.Exception` |
 
-## Package: `Server` (continua)
+## Package: `server` (continua)
 
 ### Classe Testata: `UnknownValueException`
 
@@ -471,7 +471,7 @@ Test che verificano l'interazione tra i moduli interni o con sistemi esterni (es
 |---|---|
 | Input | `Data trainingSet` caricato dalla tabella `provaC` |
 | Azione | `new RegressionTree(trainingSet)` (invoca internamente `learnTree()`, che ricorsivamente crea `LeafNode` o `SplitNode` in base alla soglia `numberOfExamplesPerLeaf = 10%` degli esempi) |
-| Atteso | il costruttore istanzia correttamente la gerarchia dei nodi (`root` e, se non foglia, `childTree[]`); `tree.toString()` non è `null` e contiene la stringa `"SPLIT"` (da `SplitNode.toString()`) e/o `"Nodo:"` (da `Node.toString()`, ereditato da `LeafNode`) |
+| Atteso | il costruttore istanzia correttamente la gerarchia dei nodi (`root` e, se non foglia, `childTree[]`); `tree.toString()` non è `null` e contiene la stringa `"SPLIT"` (da `SplitNode.toString()`) e/o `"LEAF"` (da `LeafNode.toString()`) |
 
 #### Test 2 (`testComportamentoNodoRadice`)
 
@@ -499,9 +499,9 @@ Test che verificano l'interazione tra i moduli interni o con sistemi esterni (es
 
 | Campo | Contenuto |
 |---|---|
-| Input | istanza di `RegressionTree` già costruita; percorso di un file temporaneo locale (es. `"test.dmp"`) |
-| Azione | `tree.salva("test.dmp")` (serializza l'oggetto con `ObjectOutputStream`), seguito da `RegressionTree.carica("test.dmp")` (metodo statico, deserializza con `ObjectInputStream`) |
-| Atteso | il file `"test.dmp"` viene effettivamente creato; l'albero restituito da `carica()` produce lo stesso output di `toString()` dell'albero originale |
+| Input | istanza di `RegressionTree` già costruita; percorso di un file temporaneo locale (`"test_tree.ser"`) |
+| Azione | `tree.salva("test_tree.ser")` (serializza l'oggetto con `ObjectOutputStream`), seguito da `RegressionTree.carica("test_tree.ser")` (metodo statico, deserializza con `ObjectInputStream`) |
+| Atteso | il file `"test_tree.ser"` viene effettivamente creato; l'albero restituito da `carica()` produce lo stesso output di `toString()` dell'albero originale |
 
 
 ## Package: `data`
@@ -589,7 +589,7 @@ Test che verificano l'interazione tra i moduli interni o con sistemi esterni (es
 | Atteso | dopo l'ordinamento, iterando con `getExplanatoryValue(i, indiceY)`, tutti gli elementi della colonna `Y` risultano in ordine numerico crescente |
 
 
-## Package: `Database`
+## Package: `database`
 
 ### Classe Testata: `TableData`
 
@@ -718,7 +718,7 @@ Test che verificano l'interazione tra i moduli interni o con sistemi esterni (es
 | Azione | `dbAccess.getAvailableTables()` |
 | Atteso | viene sollevata `SQLException` con messaggio esatto `"Connessione al database chiusa o non inizializzata."`, senza ritorni incoerenti o crash non gestiti |
 
-## Package: `Server`
+## Package: `server`
 
 ### Classe Testata: `MultiServer`
 
@@ -764,13 +764,5 @@ Test che verificano l'interazione tra i moduli interni o con sistemi esterni (es
 | Azione | invio del comando a `ServerOneClient`, ricezione della risposta |
 | Atteso | la prima risposta ricevuta è la stringa di sincronizzazione `"OK"`; l'oggetto successivo è un'istanza di `List<String>`, non vuota, contenente la tabella di test `provac` |
 
-#### Test 4 (`testRecuperoTabelleFallito`)
-
-**Significato:** verifica la resilienza del thread di servizio e il protocollo di notifica d'errore quando si verifica un'anomalia a livello di persistenza durante l'elaborazione del comando `4`.
-
-| Campo | Contenuto |
-|---|---|
-| Input | comando intero `4` inviato in una condizione di errore forzata a livello database (es. connessione DBMS non disponibile, cattura generica `catch (Exception e)`) |
-| Azione | invio del comando a `ServerOneClient` in presenza dell'anomalia simulata |
-| Atteso | il thread di `ServerOneClient` non si interrompe; vengono scritti in sequenza due oggetti sullo stream: prima la stringa `"ERROR"`, poi la stringa `"Errore recupero tabelle dal DB: " + e.getMessage()`, preservando l'integrità del canale socket |
+> **Nota sul percorso di errore del comando `4`:** il ramo `catch (Exception e)` che scrive in sequenza `"ERROR"` e `"Errore recupero tabelle dal DB: " + e.getMessage()` è implementato in `ServerOneClient.run()` ma non è verificato da un test automatico deterministico: per innescarlo il DBMS deve risultare non raggiungibile durante l'esecuzione del test, condizione non riproducibile in modo stabile. Il piano copre pertanto, per il comando `4`, unicamente il percorso di successo (`testRecuperoTabelleOK`).
 

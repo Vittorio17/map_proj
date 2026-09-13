@@ -1,6 +1,5 @@
 package server;
 
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -12,17 +11,22 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
-import database.DbAccess;
-
-
+/**
+ * Classe di test per il protocollo di comunicazione di {@link ServerOneClient}.
+ * Ogni test apre un socket di test su una porta effimera (ServerSocket(0)) per
+ * evitare conflitti tra esecuzioni parallele, avvia il thread dedicato al client
+ * e ne verifica le risposte.
+ */
 class ServerOneClientTest {
 
     @Test
     void testAcquisizioneDatiOK() throws Exception {
-        // Apriamo una porta e accettiamo un client in un thread separato
-        ServerSocket serverSocket = new ServerSocket(8100);
+        // Apriamo una porta effimera e accettiamo un client in un thread separato
+        ServerSocket serverSocket = new ServerSocket(0);
+        int port = serverSocket.getLocalPort();
         Thread serverAcceptor = new Thread(() -> {
             try {
                 Socket serverSideSocket = serverSocket.accept();
@@ -31,24 +35,26 @@ class ServerOneClientTest {
         });
         serverAcceptor.start();
 
-        Socket clientSocket = new Socket("localhost", 8100);
-        ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+        try (Socket clientSocket = new Socket("localhost", port);
+             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream())) {
 
-        out.writeObject(0);
-        out.writeObject("provaC");
-        out.flush();
+            out.writeObject(0);
+            out.writeObject("provaC");
+            out.flush();
 
-        String risposta = (String) in.readObject();
-        assertEquals("OK", risposta, "Il server deve rispondere OK se la tabella esiste ed è valida");
-
-        clientSocket.close();
-        serverSocket.close();
+            String risposta = (String) in.readObject();
+            assertEquals("OK", risposta, "Il server deve rispondere OK se la tabella esiste ed è valida");
+        } finally {
+            serverSocket.close();
+            serverAcceptor.interrupt();
+        }
     }
 
     @Test
     void testCaricamentoAlberoFallito() throws Exception {
-        ServerSocket serverSocket = new ServerSocket(8101);
+        ServerSocket serverSocket = new ServerSocket(0);
+        int port = serverSocket.getLocalPort();
         Thread serverAcceptor = new Thread(() -> {
             try {
                 Socket serverSideSocket = serverSocket.accept();
@@ -57,25 +63,27 @@ class ServerOneClientTest {
         });
         serverAcceptor.start();
 
-        Socket clientSocket = new Socket("localhost", 8101);
-        ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+        try (Socket clientSocket = new Socket("localhost", port);
+             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream())) {
 
-        out.writeObject(2);
-        out.writeObject("tabella_inesistente_xyz");
-        out.flush();
+            out.writeObject(2);
+            out.writeObject("tabella_inesistente_xyz");
+            out.flush();
 
-        String risposta = (String) in.readObject();
-        assertEquals("Errore durante il caricamento da archivio.", risposta, 
-            "Il server deve restituire il messaggio d'errore previsto per file non trovati");
-
-        clientSocket.close();
-        serverSocket.close();
+            String risposta = (String) in.readObject();
+            assertEquals("Errore durante il caricamento da archivio.", risposta,
+                "Il server deve restituire il messaggio d'errore previsto per file non trovati");
+        } finally {
+            serverSocket.close();
+            serverAcceptor.interrupt();
+        }
     }
-    
+
+    @Test
     void testRecuperoTabelleOK() throws Exception {
-        int testPort = 9091;
-        ServerSocket serverSocket = new ServerSocket(testPort);
+        ServerSocket serverSocket = new ServerSocket(0);
+        int port = serverSocket.getLocalPort();
 
         Thread srvThread = new Thread(() -> {
             try {
@@ -85,7 +93,7 @@ class ServerOneClientTest {
         });
         srvThread.start();
 
-        try (Socket socket = new Socket("127.0.0.1", testPort);
+        try (Socket socket = new Socket("127.0.0.1", port);
              ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
@@ -107,34 +115,6 @@ class ServerOneClientTest {
             List<String> tables = (List<String>) data;
             assertFalse(tables.isEmpty(), "La lista delle tabelle non deve essere vuota");
             assertTrue(tables.contains("provac"), "La lista deve contenere la tabella di test 'provac'");
-
-        } finally {
-            serverSocket.close();
-            srvThread.interrupt();
-        }
-    }
-    
-    void testRecuperoTabelleFallito() throws Exception {
-        int testPort = 9092;
-        ServerSocket serverSocket = new ServerSocket(testPort);
-
-        Thread srvThread = new Thread(() -> {
-            try {
-                Socket clientSocket = serverSocket.accept();
-                new ServerOneClient(clientSocket);
-            } catch (Exception ignored) {}
-        });
-        srvThread.start();
-
-        try {
-            Socket socket = new Socket("127.0.0.1", testPort);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.flush();
-
-            out.writeObject(4);
-            out.flush();
-            socket.close();
-
         } finally {
             serverSocket.close();
             srvThread.interrupt();
