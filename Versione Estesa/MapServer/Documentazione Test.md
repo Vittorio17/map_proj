@@ -2,7 +2,7 @@
 
 ## 1. Test di Unità
 
-## Package: `data` (continua)
+## Package: `data`
 
 ### Classe Testata: `ContinuousAttribute`
 
@@ -763,6 +763,3 @@ Test che verificano l'interazione tra i moduli interni o con sistemi esterni (es
 | Input | comando intero `4` inviato tramite stream di output su socket di test |
 | Azione | invio del comando a `ServerOneClient`, ricezione della risposta |
 | Atteso | la prima risposta ricevuta è la stringa di sincronizzazione `"OK"`; l'oggetto successivo è un'istanza di `List<String>`, non vuota, contenente la tabella di test `provac` |
-
-> **Nota sul percorso di errore del comando `4`:** il ramo `catch (Exception e)` che scrive in sequenza `"ERROR"` e `"Errore recupero tabelle dal DB: " + e.getMessage()` è implementato in `ServerOneClient.run()` ma non è verificato da un test automatico deterministico: per innescarlo il DBMS deve risultare non raggiungibile durante l'esecuzione del test, condizione non riproducibile in modo stabile. Il piano copre pertanto, per il comando `4`, unicamente il percorso di successo (`testRecuperoTabelleOK`).
-
