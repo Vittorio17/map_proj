@@ -115,8 +115,8 @@ public class ServerOneClient extends Thread{
                     
                         
                     case 4:
-                        try {
-                            DbAccess db = new DbAccess();
+                    	DbAccess db = new DbAccess();
+                    	try {    
                             db.initConnection();
                             List<String> tableNames = db.getAvailableTables();
                             db.closeConnection();
@@ -128,6 +128,8 @@ public class ServerOneClient extends Thread{
                             out.writeObject("ERROR");
                             out.writeObject("Errore recupero tabelle dal DB: " + e.getMessage());
                             out.flush();
+                        }finally {
+                            db.closeConnection();
                         }
                         break;
                         
